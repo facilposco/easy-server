@@ -1,0 +1,19 @@
+# Tareas programadas de Centinela Zeus (crontab de root, `sudo crontab -e`).
+# El servidor trabaja en UTC; las horas comentadas son Colombia (UTC-5).
+# Cada script avisa a Centinela que corrió ("latido") — si un día no llega la
+# señal, el panel lo marca en "Tareas programadas" y avisa por WhatsApp.
+
+# 03:00 — Respaldo diario de la base de datos (verificado + subida a Drive + rotación).
+0 8 * * *   /opt/zeus-app/scripts/backup_db.sh >> /var/log/zeus_backup.log 2>&1
+
+# 04:00 — Mantenimiento: cada 3 días reinicio completo, el resto solo el bot.
+0 9 * * *   /opt/zeus-app/scripts/reinicio_diario.sh >> /var/log/zeus_mantenimiento.log 2>&1
+
+# 05:00 domingos — Prueba de que el último respaldo de verdad se puede restaurar.
+0 10 * * 0  /opt/zeus-app/scripts/prueba-restauracion.sh >> /var/log/zeus_restauracion.log 2>&1
+
+# 02:00 martes — Limpieza de imágenes y volúmenes sobrantes de Docker.
+0 7 * * 2   docker system prune -af --volumes >> /var/log/zeus_limpieza.log 2>&1 && curl -s -m 10 -X POST -H 'X-Panel-Zeus: 1' http://127.0.0.1:4900/api/latidos/limpieza_docker >/dev/null
+
+# Lo demás (auditoría diaria, resumen de WhatsApp, vigía, informe semanal) lo
+# programa server.js por su cuenta: no hace falta cron.

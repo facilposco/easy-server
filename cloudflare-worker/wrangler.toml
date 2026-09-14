@@ -1,0 +1,57 @@
+name = "vigilante-zeus"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+# No se define ninguna ruta ni dominio propio a proposito: usamos el
+# subdominio gratuito *.workers.dev, que no necesita permisos de DNS.
+# El token de API disponible solo tiene permisos de Workers, y con eso
+# alcanza para todo este despliegue.
+
+# Disparador programado: corre cada minuto (el minimo posible), soportado
+# en el plan gratuito de Cloudflare Workers.
+[triggers]
+crons = ["* * * * *"]
+
+# Espacio de KV donde se guarda el estado entre ejecuciones (fallos
+# seguidos, si ya se aviso, desde cuando esta caido, etc).
+# 1. Crea el namespace con:
+#      wrangler kv namespace create VIGILANTE_KV
+#    (si el comando falla por permisos, crea el namespace manualmente desde
+#    el panel de Cloudflare: Workers & Pages > KV > Create a namespace)
+# 2. Copia el "id" que te entregue el comando (o el panel) y reemplaza el
+#    valor de abajo.
+[[kv_namespaces]]
+binding = "VIGILANTE_KV"
+id = "PON_AQUI_EL_ID_DEL_KV"
+
+# Variables normales (no secretas): parametros de configuracion que puedes
+# ajustar sin miedo, editando este archivo y volviendo a desplegar.
+[vars]
+# URL del endpoint de salud del servidor principal.
+URL_SERVIDOR = "https://panel.ejemplo.com/health"
+# URL del dashboard del bot de WhatsApp.
+URL_DASHBOARD = "https://bot.ejemplo.com/dashboard"
+# URL del webhook real del bot, para el monitoreo sintético (ver worker.js).
+URL_WEBHOOK_SINTETICO = "https://app.ejemplo.com/webhook/kapso"
+# Cuantas revisiones seguidas tienen que fallar antes de avisar (2 o 3
+# recomendado, para evitar falsas alarmas por un solo tropiezo de red).
+UMBRAL_FALLOS = "3"
+# Cuanto esperar como maximo por cada revision antes de darla por fallida
+# (en milisegundos).
+TIEMPO_ESPERA_MS = "8000"
+# Cuantas veces reintentar el envio del aviso por WhatsApp si Kapso falla,
+# antes de rendirse (para no quedar en bucle).
+MAX_INTENTOS_AVISO = "5"
+# Cuantos minutos esperar entre un reintento de aviso y el siguiente.
+ESPERA_REINTENTO_MIN = "5"
+
+# Los datos sensibles (contrasena del panel, llave de Kapso, etc) NO van
+# aqui. Se cargan como "secrets" con `wrangler secret put NOMBRE` y el
+# Worker los lee igual que las variables normales, desde `env`.
+# Secrets que hay que crear (ver README.md para el detalle):
+#   PANEL_USUARIO
+#   PANEL_CLAVE
+#   KAPSO_API_KEY
+#   KAPSO_PHONE_NUMBER_ID
+#   WHATSAPP_DESTINO
+#   TOKEN_PRUEBA

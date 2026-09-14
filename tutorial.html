@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Centinela Zeus — cómo funciona</title>
+<meta name="description" content="Tutorial ilustrado de Centinela Zeus, el ingeniero de servidores senior en software libre para negocios pequeños: qué es, cómo vigila, cómo repara, cómo avisa por WhatsApp y cómo se instala.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #F4F6F8; --surface: #FFFFFF; --surface-2: #EDF1F4;
+    --ink: #0F1722; --ink-2: #4A5768; --ink-3: #76828F;
+    --border: #DCE3EA; --accent: #0F6E73; --accent-ink: #0B5256; --accent-soft: #DCEDEE;
+    --good: #1C7A4B; --good-soft: #DFF3E7; --warn: #B7791F; --warn-soft: #FBEFD8; --crit: #B42318; --crit-soft: #FBE3E0;
+    --r: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0B1118; --surface: #141B22; --surface-2: #1C2630;
+      --ink: #E8EDF2; --ink-2: #B4BEC9; --ink-3: #7F8A96;
+      --border: #263140; --accent: #4CC9C0; --accent-ink: #8DE3DC; --accent-soft: #123B3D;
+      --good: #5BD48C; --good-soft: #10301F; --warn: #F0B35B; --warn-soft: #3A2A0E; --crit: #F28B82; --crit-soft: #3A1512;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0B1118; --surface: #141B22; --surface-2: #1C2630;
+    --ink: #E8EDF2; --ink-2: #B4BEC9; --ink-3: #7F8A96;
+    --border: #263140; --accent: #4CC9C0; --accent-ink: #8DE3DC; --accent-soft: #123B3D;
+    --good: #5BD48C; --good-soft: #10301F; --warn: #F0B35B; --warn-soft: #3A2A0E; --crit: #F28B82; --crit-soft: #3A1512;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 16px/1.6 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1, h2, h3 { font-family: "Chivo", "IBM Plex Sans", sans-serif; letter-spacing: -.01em; line-height: 1.2; margin: 0; text-wrap: balance; }
+  p { margin: 0; max-width: 70ch; }
+  a { color: var(--accent-ink); }
+  code, pre { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: .92em; }
+  code { background: var(--surface-2); padding: 1px 6px; border-radius: 6px; }
+  pre { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 0; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 24px 20px 80px; }
+  header.hero { padding: 56px 0 28px; display: grid; gap: 14px; }
+  .eyebrow { color: var(--accent-ink); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; font-size: 12.5px; }
+  .hero h1 { font-size: clamp(30px, 5vw, 46px); }
+  .hero .lead { font-size: 19px; color: var(--ink-2); max-width: 62ch; }
+  .hero .cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+  .btn { display: inline-block; padding: 10px 16px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--border); background: var(--surface); color: var(--ink); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  :root[data-theme="dark"] .btn.primary, [data-theme="dark"] .btn.primary { color: #06282A; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #06282A; } }
+  nav.toc { display: flex; gap: 8px 16px; flex-wrap: wrap; padding: 14px 0 26px; border-bottom: 1px solid var(--border); font-size: 14.5px; }
+  nav.toc a { text-decoration: none; color: var(--ink-2); }
+  section { padding: 40px 0 8px; display: grid; gap: 16px; }
+  section h2 { font-size: 28px; }
+  section h3 { font-size: 18px; margin-top: 8px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 20px; display: grid; gap: 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .pasos { counter-reset: paso; display: grid; gap: 10px; padding: 0; margin: 0; list-style: none; }
+  .pasos li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; align-items: start; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+  .pasos li::before { counter-increment: paso; content: counter(paso); width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); font-weight: 700; display: grid; place-items: center; }
+  .pasos b { display: block; }
+  .pasos span { color: var(--ink-2); font-size: 15px; }
+  figure { margin: 0; display: grid; gap: 8px; }
+  figure img { width: 100%; max-width: 100%; border-radius: 12px; border: 1px solid var(--border); background: #0B1118; }
+  figcaption { color: var(--ink-3); font-size: 14px; }
+  .dos { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+  @media (max-width: 760px) { .dos { grid-template-columns: minmax(0, 1fr); } }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  .tw { overflow-x: auto; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--ink-3); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; }
+  .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+  .ok { background: var(--good-soft); color: var(--good); } .wa { background: var(--warn-soft); color: var(--warn); } .no { background: var(--crit-soft); color: var(--crit); }
+  .diagrama { font-family: "IBM Plex Mono", monospace; font-size: 13px; line-height: 1.45; white-space: pre; }
+  footer { padding: 40px 0 0; color: var(--ink-3); font-size: 14px; border-top: 1px solid var(--border); margin-top: 40px; }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <span class="eyebrow">Tutorial · Centinela Zeus 1.0 · software libre (MIT)</span>
+  <h1>Un ingeniero de servidores senior para un negocio que no puede pagar uno.</h1>
+  <p class="lead">Centinela vigila tu servidor todos los días, repara lo que es seguro reparar, te pide una palabra escrita para lo que no, y te explica todo por WhatsApp y en un panel, en español claro. Esta página cuenta cómo funciona, sección por sección.</p>
+  <div class="cta">
+    <a class="btn primary" href="https://github.com/facilposco/easy-server">Ver el código en GitHub</a>
+    <a class="btn" href="docs/INSTALACION.md">Instalarlo en 20 minutos</a>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Contenido">
+  <a href="#que-es">Qué es</a><a href="#piezas">Las tres piezas</a><a href="#sos">El protocolo SOS</a><a href="#panel">El panel</a><a href="#whatsapp">WhatsApp</a><a href="#auditorias">Auditorías</a><a href="#prevencion">Prevención</a><a href="#cloudflare">Cloudflare</a><a href="#seguridad">Qué hace solo y qué no</a><a href="#instalar">Instalación</a><a href="#contribuir">Contribuir</a>
+</nav>
+
+<section id="que-es">
+  <h2>Qué es y para quién</h2>
+  <p>Un negocio pequeño pone su bot de WhatsApp, su tienda o su API en un servidor virtual (VPS) con Docker y nadie lo cuida. Un día el disco se llena, la base de datos se traba o un contenedor se cae de madrugada, y el dueño se entera porque los clientes dejan de recibir respuesta.</p>
+  <p>Centinela Zeus es un programa que se instala en ese servidor y hace, todos los días, lo que haría un ingeniero con experiencia: <b>mira, diagnostica antes de tocar, guarda evidencia, repara de lo menos invasivo a lo más invasivo, verifica, y cuando no sabe, se detiene y avisa.</b> Está escrito para un dueño que usa el celular y el computador con soltura pero no sabe Linux, y no tiene por qué saberlo.</p>
+  <div class="grid">
+    <div class="card"><b>Vigila</b><p>Contenedores, base de datos, disco, memoria, CPU, copias de seguridad, certificado, puertos, tareas programadas, tendencias.</p></div>
+    <div class="card"><b>Repara</b><p>Libera espacio, reinicia el servicio que falla en orden de dependencia, deshace un despliegue malo, aplica arreglos de base de datos seguros.</p></div>
+    <div class="card"><b>Explica</b><p>Cada hallazgo dice qué significa, qué tan grave es de verdad y qué botón lo arregla. Si no hay botón, dice por qué y qué haría un técnico.</p></div>
+  </div>
+</section>
+
+<section id="piezas">
+  <h2>Las tres piezas</h2>
+  <div class="card diagrama">            WhatsApp (dueño)  ◄──────────────►  server.js  ◄──────────────►  Docker · MariaDB · Traefik
+                                          panel web + API + SOS
+                                          auditorías + latidos + relojes
+                                                  ▲
+                                   /health cada minuto · /gemini-proxy
+                                                  │
+                                   cloudflare-worker/worker.js  (fuera del servidor)
+                                   vigila desde afuera · avisa aunque el VPS esté apagado
+                                   guarda la llave de la IA</div>
+  <div class="grid">
+    <div class="card"><b>server.js</b><p>Un solo proceso Node 20, sin dependencias, corriendo en el host con systemd (fuera de Docker, para poder reiniciar contenedores sin morir con ellos). Sirve el panel, la API y los relojes, y compone los módulos de <code>modulos/</code>.</p></div>
+    <div class="card"><b>public/</b><p>El panel: HTML y JavaScript sin frameworks. Trece secciones, consolas en vivo, confirmación por palabra escrita, diseño para celular.</p></div>
+    <div class="card"><b>cloudflare-worker/</b><p>El vigilante externo y el proxy de IA, en el plan gratuito de Cloudflare. Es lo único que sigue vivo cuando el servidor muere.</p></div>
+  </div>
+</section>
+
+<section id="sos">
+  <h2>El protocolo SOS: nueve pasos en el orden correcto</h2>
+  <div class="dos">
+    <div>
+      <p>Los tres primeros pasos <b>no arreglan nada a propósito</b>: actuar antes de entender es lo que convierte una falla pequeña en una caída larga. El paso 9 se repite entre cada peldaño.</p>
+      <ol class="pasos" style="margin-top:12px">
+        <li><div><b>Diagnosticar</b><span>Qué está roto y desde cuándo, con datos reales y umbrales numéricos, nunca con lo que opine una IA.</span></div></li>
+        <li><div><b>Medir el impacto</b><span>¿Afecta a los clientes? No es lo mismo el bot caído que un servicio interno.</span></div></li>
+        <li><div><b>Guardar la evidencia</b><span>Antes de tocar nada. Reiniciar borra el rastro. Se enmascara al escribirla, porque el dueño la va a copiar para pedir ayuda.</span></div></li>
+        <li><div><b>Reiniciar solo el servicio que falla</b><span>Lo menos invasivo que resuelve el caso más común.</span></div></li>
+        <li><div><b>Liberar disco o memoria primero</b><span>Reiniciar con el disco lleno no arregla nada: se cae otra vez en minutos.</span></div></li>
+        <li><div><b>Reiniciar varios, en orden de dependencia</b><span>Base de datos → memoria de búsqueda → bot → puerta de entrada.</span></div></li>
+        <li><div><b>Deshacer el último cambio</b><span>Si se rompió justo tras un despliegue, el culpable es el cambio, no el servidor.</span></div></li>
+        <li><div><b>Reiniciar el servidor completo</b><span>Último recurso: dos minutos caído, borra el rastro, máximo una vez al día.</span></div></li>
+        <li><div><b>Confirmar que de verdad volvió</b><span>"Encendido" no es "atendiendo". Se ejecuta después de cada paso.</span></div></li>
+      </ol>
+    </div>
+    <figure><img src="docs/capturas/sos.png" alt="La sección SOS del panel: un botón, límites de seguridad y el protocolo"><figcaption>La sección SOS: un botón, los límites del día y el protocolo a la vista.</figcaption></figure>
+  </div>
+</section>
+
+<section id="panel">
+  <h2>Recorrido por el panel</h2>
+  <figure><img src="docs/capturas/inicio.png" alt="Inicio del panel con la Auditoría 360"><figcaption><b>Inicio.</b> La Auditoría 360 revisa seguridad, base de datos, capacidad, servicios, copias y tareas en una sola pasada y da una nota de 1 a 10 por área. Debajo, lo que se arregla con un clic y lo que solo conviene saber.</figcaption></figure>
+  <div class="grid">
+    <figure><img src="docs/capturas/historial.png" alt="Historial de caídas, reinicios y acciones"><figcaption><b>Historial.</b> Qué pasó, cuándo, y qué hizo Centinela o tú. Las caídas quedan explicadas aunque hayan durado un minuto.</figcaption></figure>
+    <figure><img src="docs/capturas/copias.png" alt="Copias de seguridad con verificación en Drive"><figcaption><b>Copias de seguridad.</b> Última copia, tamaño, cuántas hay y si subieron a Drive. Los domingos, una prueba de restauración real en un contenedor descartable.</figcaption></figure>
+    <figure><img src="docs/capturas/optimizacion.png" alt="Auditoría de la base de datos con botones por hallazgo"><figcaption><b>Optimización.</b> Diez revisiones de la base de datos. Donde es seguro, un botón real (eliminar un índice redundante, pasar una tabla a InnoDB, desfragmentar); donde no, la explicación honesta.</figcaption></figure>
+    <figure><img src="docs/capturas/simulacros.png" alt="Catálogo de simulacros"><figcaption><b>Simulacros.</b> Seis fallas provocadas a propósito, con vuelta atrás automática, para ver a Centinela reaccionar antes de que pase de verdad.</figcaption></figure>
+    <figure><img src="docs/capturas/permisos.png" alt="Freno de emergencia y permisos por categoría"><figcaption><b>Permisos.</b> Freno de emergencia, horario comercial y, por cada una de 10 áreas, si Centinela puede vigilar y si puede actuar sola.</figcaption></figure>
+    <figure><img src="docs/capturas/ajustes.png" alt="Ajustes: WhatsApp, modo viaje, técnico de respaldo"><figcaption><b>Ajustes.</b> Prueba de WhatsApp, modo viaje, y a quién reenviar un aviso grave si tú no lo confirmas en 15 minutos.</figcaption></figure>
+  </div>
+  <div class="card">
+    <b>Tres reglas del panel que vale la pena conocer</b>
+    <p>1. <b>Toda acción que no se puede deshacer con un clic pide una palabra escrita</b> (REINICIAR, ACTUALIZAR, APLICAR, ELIMINAR…). Una prueba automática falla si alguien agrega un botón de alto riesgo sin ella.</p>
+    <p>2. <b>Nada que parezca un botón de arreglo miente.</b> Si un hallazgo no tiene arreglo seguro de un clic, verás "Explicar con IA" o "Copiar para tu técnico", nunca un botón que lleve a una página sin solución.</p>
+    <p>3. <b>Funciona igual en el celular.</b> Menú de abajo, filas que se acomodan, sin desplazamiento horizontal.</p>
+  </div>
+</section>
+
+<section id="whatsapp">
+  <h2>WhatsApp: administrar el servidor desde el celular</h2>
+  <div class="dos">
+    <div class="card">
+      <b><code>/centinela menu</code> — 19 opciones, ordenadas por lo que más falla</b>
+      <div class="tw"><table>
+        <tr><th>#</th><th>Opción</th><th>Confirma</th></tr>
+        <tr><td>1</td><td>SOS: diagnosticar y reparar todo</td><td></td></tr>
+        <tr><td>2</td><td>Estado del servidor ahora</td><td></td></tr>
+        <tr><td>3</td><td>¿El bot está mudo?</td><td></td></tr>
+        <tr><td>4</td><td>Reiniciar el bot</td><td><span class="pill wa">sí</span></td></tr>
+        <tr><td>5</td><td>Consulta trabada en la base</td><td></td></tr>
+        <tr><td>6</td><td>Fallas recientes</td><td></td></tr>
+        <tr><td>7</td><td>Último despliegue</td><td></td></tr>
+        <tr><td>8</td><td>Reiniciar la puerta de entrada</td><td><span class="pill wa">sí</span></td></tr>
+        <tr><td>9</td><td>¿Hay un servicio en bucle?</td><td></td></tr>
+        <tr><td>10</td><td>Conexiones a la base</td><td></td></tr>
+        <tr><td>11</td><td>Copias de seguridad</td><td></td></tr>
+        <tr><td>12</td><td>Hacer una copia ahora</td><td><span class="pill wa">sí</span></td></tr>
+        <tr><td>13</td><td>Certificado del sitio</td><td></td></tr>
+        <tr><td>14</td><td>Liberar espacio en disco</td><td><span class="pill wa">sí</span></td></tr>
+        <tr><td>15</td><td>Memoria del bot</td><td></td></tr>
+        <tr><td>16</td><td>Seguridad</td><td></td></tr>
+        <tr><td>17</td><td>¿Hubo una caída corta?</td><td></td></tr>
+        <tr><td>18</td><td>Registros del bot</td><td></td></tr>
+        <tr><td>19</td><td>Modo viaje</td><td><span class="pill wa">sí</span></td></tr>
+      </table></div>
+    </div>
+    <div style="display:grid;gap:14px">
+      <div class="card"><b>Preguntas libres</b><p><code>/centinela ¿por qué va lento el bot?</code> La IA responde con el estado real del servidor como contexto (los mismos datos del panel), en español, sin jerga. Con tope diario de consultas.</p></div>
+      <div class="card"><b>Lo que llega solo</b><p>Resumen diario a las 8 a. m., informe semanal los lunes, avisos de caída y de recuperación, avisos del vigía cuando una tendencia va a ser problema. Si no confirmas un aviso grave en 15 minutos, se reenvía al técnico que hayas configurado.</p></div>
+      <div class="card"><b>Modo viaje</b><p>Silencia lo menor; solo avisa si algo se cae por completo.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="auditorias">
+  <h2>Auditorías: seguridad y base de datos</h2>
+  <div class="grid">
+    <div class="card">
+      <b>Seguridad (8 revisiones, todos los días a las 7 a. m.)</b>
+      <p>SSH y acceso remoto · cortafuegos y bloqueo de intrusos · actualizaciones del sistema (<span class="pill ok">botón Instalar</span>) · usuarios con permiso de administrador · permisos de archivos con contraseñas (<span class="pill ok">botón Corregir</span>) · Docker · dependencias del bot · credenciales escritas en el código. Además, cada 5 minutos: certificado, puertos abiertos, intentos fallidos, cambios en la configuración de Traefik.</p>
+    </div>
+    <div class="card">
+      <b>Base de datos (10 revisiones, MariaDB)</b>
+      <p>Conexiones · memoria caché de InnoDB · motor y claves primarias (<span class="pill ok">Pasar a InnoDB</span>) · fragmentación (<span class="pill ok">Desfragmentar</span>) · consultas que recorren tablas enteras · índices duplicados (<span class="pill ok">Eliminar</span>) · crecimiento · memoria reservada (<span class="pill ok">Liberar memoria</span>) · bloqueos · sugerencias de índice pendientes (<span class="pill ok">Aplicar</span>, con vuelta atrás). Una sugerencia sobre una vista o una columna que ya tiene índice no ofrece botón: te dice por qué.</p>
+    </div>
+  </div>
+</section>
+
+<section id="prevencion">
+  <h2>Prevención: que no llegue a fallar</h2>
+  <div class="grid">
+    <div class="card"><b>Vigía de tendencias</b><p>Reglas deterministas sobre el historial: proyección de disco y memoria, picos de CPU y carga, reinicios repetidos. Cuando una dispara, la IA redacta el aviso. Respondes <code>util</code> o <code>ruido</code> y esa regla se vuelve más o menos sensible.</p></div>
+    <div class="card"><b>Memoria de incidentes</b><p>Aprende de cada corrida del SOS. Cuando se rinde, sugiere una guía paso a paso del problema parecido más reciente. Nunca la ejecuta sola.</p></div>
+    <div class="card"><b>Latidos</b><p>Cada tarea programada (respaldo, mantenimiento, prueba de restauración, auditorías) manda una señal al terminar. Si un día falta, el panel y WhatsApp lo dicen.</p></div>
+    <div class="card"><b>Simulacros</b><p>Muerte súbita del bot, pico de CPU, agotamiento de memoria, disco lleno, aislamiento de red, congelar la base. Todos con vuelta atrás automática y un "hombre muerto" por si el servidor se reinicia a mitad.</p></div>
+  </div>
+</section>
+
+<section id="cloudflare">
+  <h2>El Worker de Cloudflare: la parte que vive fuera</h2>
+  <p>Todo lo que corre dentro del servidor muere con él. Por eso hay una pieza pequeña en la red de Cloudflare, en el plan gratuito, que hace dos cosas imposibles desde adentro:</p>
+  <div class="grid">
+    <div class="card"><b>Vigilante externo</b><p>Cada minuto pide el <code>/health</code> del panel y una página del bot, y manda un webhook firmado e inocuo para detectar el caso más traicionero: el bot "vivo" pero colgado. Avisa solo tras 3 fallos seguidos, una sola vez por caída, y al recuperarse dice cuánto tiempo estuvo caído. Guarda estado en KV solo cuando algo cambia, así cabe en el plan gratuito.</p></div>
+    <div class="card"><b>Proxy de Gemini</b><p>La capa gratuita de Gemini rechaza llamadas desde IPs de proveedores de VPS. El Worker las reenvía desde la red de Cloudflare, con la llave real guardada como secreto solo ahí, y rota entre varias llaves si una se agota.</p></div>
+  </div>
+  <pre>npm install -g wrangler
+cd cloudflare-worker
+wrangler kv namespace create VIGILANTE_KV     # pega el id en wrangler.toml
+wrangler secret put PANEL_USUARIO            # y cada secreto de la tabla del README
+wrangler deploy                              # pega la URL en VIGILANTE_URL del .env
+wrangler tail                                # logs en vivo</pre>
+  <p>Explicación función por función en <a href="docs/CLOUDFLARE-WORKER.md">docs/CLOUDFLARE-WORKER.md</a>.</p>
+</section>
+
+<section id="seguridad">
+  <h2>Qué hace solo y qué no hace nunca</h2>
+  <div class="tw"><table>
+    <tr><th>Hace solo</th><th>Hace solo, con límite duro</th><th>Nunca hace solo</th></tr>
+    <tr>
+      <td>Liberar espacio en disco (sin borrar datos del negocio) · reiniciar un servicio propio · reiniciar varios en orden</td>
+      <td>Reiniciar el servidor: 1 por día, 6 h de enfriamiento, se autobloquea · deshacer un despliegue: igual · reiniciar Docker: 2 por día</td>
+      <td>Tocar contenedores de otro proyecto · borrar datos, volúmenes o copias · matar una consulta de la base · cualquier cosa irreversible</td>
+    </tr>
+  </table></div>
+  <div class="card"><b>Se detiene y pide una persona cuando</b><p>no logra diagnosticar (nunca reinicia "a ver si se arregla"), agotó su presupuesto (4 acciones o 10 minutos por corrida), la acción está bloqueada o en enfriamiento, el culpable es un contenedor ajeno, o tras reparar el servicio sigue sin atender.</p></div>
+  <div class="card"><b>Y encima, un freno</b><p>Desde Permisos: un freno de emergencia (Centinela solo mira y avisa), un horario comercial (no reinicia el servidor completo en horas de atención si el bot sigue respondiendo de alguna forma) y permisos de lectura y escritura por cada una de 10 áreas.</p></div>
+</section>
+
+<section id="instalar">
+  <h2>Instalación resumida</h2>
+  <ol class="pasos">
+    <li><div><b>Clona en el servidor</b><span><code>sudo git clone https://github.com/facilposco/easy-server.git /opt/zeus-ops</code>. Necesitas Node 20. No hay <code>npm install</code>.</span></div></li>
+    <li><div><b>Configura el .env</b><span>Copia <code>.env.example</code> a <code>.env</code> y llena dominio, contraseña de la base, nombre de la base, número de WhatsApp y llaves del proveedor.</span></div></li>
+    <li><div><b>Personaliza la voz</b><span>En <code>centinela-persona.md</code> reemplaza <code>[NombreDelNegocio]</code>.</span></div></li>
+    <li><div><b>Déjalo corriendo</b><span><code>deploy/zeus-ops.service</code> con systemd. Escucha solo en 127.0.0.1:4900.</span></div></li>
+    <li><div><b>Publica el panel</b><span>Traefik con contraseña: <code>deploy/traefik-dynamic.example.yml</code>.</span></div></li>
+    <li><div><b>Despliega el vigilante</b><span><code>cloudflare-worker/</code>, seis comandos. Pega la URL en el .env.</span></div></li>
+    <li><div><b>Programa las tareas</b><span><code>deploy/crontab.example</code>: respaldo, mantenimiento, prueba de restauración, limpieza.</span></div></li>
+    <li><div><b>Comprueba</b><span>Inicio → Auditar todo · Ajustes → Enviarme el estado · WhatsApp <code>/centinela menu</code> · Simulacros → Muerte súbita del bot.</span></div></li>
+  </ol>
+  <p>Paso a paso con todos los comandos en <a href="docs/INSTALACION.md">docs/INSTALACION.md</a>.</p>
+</section>
+
+<section id="contribuir">
+  <h2>Es software libre: puedes mejorarlo</h2>
+  <p>Centinela Zeus se publica con licencia MIT para que cualquier negocio pequeño tenga lo que antes solo tenían las empresas grandes. Si tienes un caso real de caída, una mejora, una traducción o un adaptador para otro proveedor de WhatsApp o de base de datos, lee <a href="CONTRIBUTING.md">CONTRIBUTING.md</a> y abre un issue o un PR en <a href="https://github.com/facilposco/easy-server">github.com/facilposco/easy-server</a>.</p>
+  <p>Las reglas del proyecto son pocas y firmes: sin dependencias externas, cada módulo recibe lo que necesita por parámetro, cada cambio trae su prueba, cada comando externo se valida con lista blanca, cada acción irreversible pide una palabra escrita, y nunca se suben secretos.</p>
+</section>
+
+<footer>Centinela Zeus 1.0.0 · MIT · Hecho para que un negocio pequeño duerma tranquilo. <a href="README.md">README</a> · <a href="docs/ARQUITECTURA.md">Arquitectura</a> · <a href="CLAUDE.md">Protocolo SOS</a></footer>
+
+</div>
+</body>
+</html>

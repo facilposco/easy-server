@@ -1,0 +1,1572 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Centinela Zeus</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* =========================================================================
+     Centinela Zeus — tokens y estilos
+     Base: los mismos tokens de estilos.html (paleta, tipografía, sombra, --r).
+     Añadidos: los que la propuesta de UX (sección 6) aprueba explícitamente
+     -ink/-line por estado, --mute, --on-accent/--on-crit, --scrim, --tab-h.
+     Los valores de estos añadidos y el --r:14px vienen de maqueta.html, que
+     es la maqueta ya aprobada — ver CAMBIOS.md, punto "Tokens de color".
+     ========================================================================= */
+  :root {
+    --ground: #F4F6F8;
+    --surface: #FFFFFF;
+    --surface-2: #EDF1F4;
+    --ink: #0F1722;
+    --ink-2: #4A5768;
+    --ink-3: #76828F;
+    --border: #DCE3EA;
+    --border-2: #C7D1DA;
+    --accent: #0F6E73;
+    --accent-ink: #0B5256;
+    --accent-soft: #DCEDEE;
+    --on-accent: #FFFFFF;
+    --good: #1C7A4B;
+    --good-ink: #14603A;
+    --good-soft: #DDF0E5;
+    --good-line: #A9D8BE;
+    --warn: #9E5D05;
+    --warn-ink: #7A4703;
+    --warn-soft: #FAECD6;
+    --warn-line: #E8C48E;
+    --crit: #AF251D;
+    --crit-ink: #8E1C15;
+    --crit-soft: #F9E0DD;
+    --crit-line: #EBA8A2;
+    --on-crit: #FFFFFF;
+    --mute: #5B6774;
+    --mute-soft: #E4E9EE;
+    --mute-line: #C3CDD6;
+    --scrim: rgba(15, 23, 34, .5);
+    --shadow: 0 1px 2px rgba(15, 23, 34, .06), 0 10px 28px rgba(15, 23, 34, .07);
+    --r: 14px;
+    --tab-h: 62px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0B1015; --surface: #141B22; --surface-2: #1C2530;
+      --ink: #E8EDF2; --ink-2: #A9B6C4; --ink-3: #7C8997;
+      --border: #26313B; --border-2: #35424E;
+      --accent: #4FC3C9; --accent-ink: #8FDFE3; --accent-soft: #12303A; --on-accent: #06171A;
+      --good: #52BE83; --good-ink: #8ED9AF; --good-soft: #10291E; --good-line: #1F4A33;
+      --warn: #DFA645; --warn-ink: #F0C67A; --warn-soft: #2E2210; --warn-line: #5A4520;
+      --crit: #EF7C72; --crit-ink: #F7A59D; --crit-soft: #351815; --crit-line: #6A2B26; --on-crit: #1A0806;
+      --mute: #9AA6B2; --mute-soft: #1F2932; --mute-line: #35424E;
+      --scrim: rgba(0, 0, 0, .62);
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px rgba(0, 0, 0, .35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0B1015; --surface: #141B22; --surface-2: #1C2530;
+    --ink: #E8EDF2; --ink-2: #A9B6C4; --ink-3: #7C8997;
+    --border: #26313B; --border-2: #35424E;
+    --accent: #4FC3C9; --accent-ink: #8FDFE3; --accent-soft: #12303A; --on-accent: #06171A;
+    --good: #52BE83; --good-ink: #8ED9AF; --good-soft: #10291E; --good-line: #1F4A33;
+    --warn: #DFA645; --warn-ink: #F0C67A; --warn-soft: #2E2210; --warn-line: #5A4520;
+    --crit: #EF7C72; --crit-ink: #F7A59D; --crit-soft: #351815; --crit-line: #6A2B26; --on-crit: #1A0806;
+    --mute: #9AA6B2; --mute-soft: #1F2932; --mute-line: #35424E;
+    --scrim: rgba(0, 0, 0, .62);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px rgba(0, 0, 0, .35);
+  }
+
+  /* En celular, una sola fila que no cabe (una insignia, un botón sin
+     envolver) puede estirar toda la página — y de paso corrompe el ancho de
+     .tabbar (position:fixed;left:0;right:0 empieza a medirse contra el
+     ancho con desborde en vez del viewport real). No debería pasar nunca:
+     ninguna sección se diseña para desbordar, pero esto es la red de
+     seguridad para cuando algo se cuela (encontrado probando en el celular
+     el 14-sep-2026: el menú de abajo terminaba más ancho que la pantalla). */
+  html, body { overflow-x: hidden; max-width: 100%; }
+  #zeus-app { box-sizing: border-box; }
+  #zeus-app *, #zeus-app *::before, #zeus-app *::after { box-sizing: border-box; }
+  #zeus-app {
+    background: var(--ground); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    font-size: 15px; line-height: 1.5; font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+  #zeus-app h1, #zeus-app h2, #zeus-app h3, #zeus-app h4 { margin: 0; line-height: 1.25; letter-spacing: -.01em; }
+  #zeus-app p { margin: 0; }
+  #zeus-app ul { margin: 0; padding: 0; list-style: none; }
+  #zeus-app button { font: inherit; color: inherit; }
+  #zeus-app [hidden] { display: none !important; }
+  #zeus-app .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+
+  /* ---------- cabecera ---------- */
+  #zeus-app .top {
+    position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--border);
+  }
+  #zeus-app .brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  #zeus-app .brand-mark {
+    width: 30px; height: 30px; border-radius: 8px; flex: none; background: var(--accent); color: var(--on-accent);
+    display: grid; place-items: center; font-weight: 800; font-size: 15px;
+  }
+  #zeus-app .brand-name { font-weight: 700; font-size: 15px; white-space: nowrap; }
+  #zeus-app .revisado { margin-left: auto; font-size: 13px; color: var(--ink-3); white-space: nowrap; }
+  #zeus-app .pill {
+    display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
+    border-radius: 999px; padding: 5px 12px 5px 9px; font-size: 13px; font-weight: 600;
+    background: var(--mute-soft); color: var(--mute); border: 1px solid var(--mute-line);
+  }
+  #zeus-app .pill .ic { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; display: inline-block; }
+  #zeus-app .pill.ok   { background: var(--good-soft); color: var(--good-ink); border-color: var(--good-line); }
+  #zeus-app .pill.warn { background: var(--warn-soft); color: var(--warn-ink); border-color: var(--warn-line); }
+  #zeus-app .pill.crit { background: var(--crit-soft); color: var(--crit-ink); border-color: var(--crit-line); }
+  #zeus-app .pill.mute { background: var(--mute-soft); color: var(--mute); border-color: var(--mute-line); }
+  #zeus-app .pill.crit .ic { animation: zeus-latido 1.2s ease-in-out infinite; }
+  @keyframes zeus-latido { 50% { opacity: .35; } }
+
+  /* ---------- estructura ---------- */
+  #zeus-app .shell { display: grid; grid-template-columns: 236px minmax(0, 1fr); }
+  #zeus-app .rail {
+    position: sticky; top: 51px; height: calc(100vh - 51px); overflow-y: auto;
+    background: var(--surface); border-right: 1px solid var(--border);
+    padding: 16px 12px; display: flex; flex-direction: column; gap: 4px;
+  }
+  #zeus-app .rail button {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    background: none; border: 0; border-radius: 9px; cursor: pointer;
+    padding: 10px 12px; font-size: 15px; color: var(--ink-2);
+  }
+  #zeus-app .rail button:hover { background: var(--surface-2); color: var(--ink); }
+  #zeus-app .rail button[aria-current="true"] { background: var(--accent-soft); color: var(--accent-ink); font-weight: 600; }
+  #zeus-app .rail button:focus-visible, #zeus-app .tab:focus-visible, #zeus-app .btn:focus-visible, #zeus-app .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #zeus-app .rail .sep { height: 1px; background: var(--border); margin: 8px 6px; }
+  #zeus-app .rail-label { padding: 4px 12px 2px; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+  #zeus-app .rail .foot { margin-top: auto; padding: 8px 12px; font-size: 12.5px; color: var(--ink-3); display: grid; gap: 2px; }
+  #zeus-app .badge { margin-left: auto; width: 8px; height: 8px; border-radius: 50%; background: var(--crit); display: none; }
+  #zeus-app[data-estado="crisis"] .badge, #zeus-app[data-estado="off"] .badge { display: block; }
+  #zeus-app[data-estado="off"] .badge { background: var(--mute); }
+
+  #zeus-app .main { padding: 20px 24px 60px; max-width: 1080px; width: 100%; }
+  /* grid-template-columns: minmax(0, 1fr) explícito — sin esto, una sola
+     columna implícita de grid se comporta como pista "auto": no se achica
+     por debajo del contenido más ancho de adentro (una insignia o un botón
+     sin envolver), y esa tarjeta puede terminar más ancha que la pantalla
+     en celular aunque .view y .shell ya midan el ancho correcto (mismo bug
+     que .shell, un nivel más adentro — encontrado probando en el celular
+     el 14-sep-2026). */
+  #zeus-app .view { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  #zeus-app .view-head h2 { font-size: 24px; }
+  #zeus-app .view-head p { color: var(--ink-2); margin-top: 4px; max-width: 66ch; }
+
+  #zeus-app .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); }
+  #zeus-app .card-head { display: flex; align-items: baseline; gap: 10px; padding: 14px 18px 0; flex-wrap: wrap; }
+  #zeus-app .card-head h3 { font-size: 16px; }
+  #zeus-app .card-head .sub { font-size: 13px; color: var(--ink-3); }
+  #zeus-app .card-head .right { margin-left: auto; }
+  #zeus-app .card-body { padding: 14px 18px 16px; }
+  #zeus-app .card-body.tight { padding-top: 6px; }
+
+  /* ---------- botones ---------- */
+  #zeus-app .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 44px; padding: 10px 16px; border-radius: 10px; cursor: pointer;
+    font-size: 15px; font-weight: 600; white-space: nowrap;
+    background: var(--surface); color: var(--ink); border: 1px solid var(--border-2);
+  }
+  #zeus-app .btn:hover { background: var(--surface-2); }
+  #zeus-app .btn.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  #zeus-app .btn.primary:hover { filter: brightness(1.07); }
+  #zeus-app .btn.danger, #zeus-app .btn.crit { background: var(--crit); color: var(--on-crit); border-color: var(--crit); }
+  #zeus-app .btn.ghost { background: transparent; border-color: transparent; color: var(--accent-ink); padding-inline: 10px; }
+  #zeus-app .btn.ghost:hover { background: var(--accent-soft); }
+  #zeus-app .btn.sm { min-height: 36px; padding: 6px 12px; font-size: 14px; font-weight: 500; }
+  #zeus-app .btn.block { width: 100%; }
+  #zeus-app .btn:disabled { opacity: .55; cursor: default; }
+  #zeus-app .btn.cargando { animation: zeus-latido 1.2s ease-in-out infinite; }
+  #zeus-app .fila .btn.danger { margin-left: auto; }
+  #zeus-app .link { background: none; border: 0; padding: 0; color: var(--accent-ink); text-decoration: underline; cursor: pointer; font-size: inherit; text-align: left; }
+
+  /* ---------- veredicto ---------- */
+  #zeus-app .estado { border-radius: var(--r); border: 1px solid; padding: 20px 22px; display: grid; gap: 14px; }
+  #zeus-app .estado.ok    { background: var(--good-soft); border-color: var(--good-line); }
+  #zeus-app .estado.warn  { background: var(--warn-soft); border-color: var(--warn-line); }
+  #zeus-app .estado.crit  { background: var(--crit-soft); border-color: var(--crit-line); }
+  #zeus-app .estado.off   { background: var(--mute-soft); border-color: var(--mute-line); }
+  #zeus-app .estado-head { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 14px; align-items: start; }
+  #zeus-app .estado-dot { width: 18px; height: 18px; border-radius: 50%; margin-top: 6px; background: var(--mute); }
+  #zeus-app .estado.ok .estado-dot { background: var(--good); }
+  #zeus-app .estado.warn .estado-dot { background: var(--warn); }
+  #zeus-app .estado.crit .estado-dot { background: var(--crit); box-shadow: 0 0 0 6px color-mix(in srgb, var(--crit) 22%, transparent); animation: zeus-latido 1.2s infinite; }
+  #zeus-app .estado.off .estado-dot { background: var(--mute); }
+  #zeus-app .estado h1 { font-size: 26px; font-weight: 800; }
+  #zeus-app .estado.ok h1 { color: var(--good-ink); }
+  #zeus-app .estado.warn h1 { color: var(--warn-ink); }
+  #zeus-app .estado.crit h1 { color: var(--crit-ink); }
+  #zeus-app .estado.off h1 { color: var(--ink); }
+  #zeus-app .estado .desc { color: var(--ink-2); margin-top: 4px; font-size: 15.5px; max-width: 66ch; }
+  #zeus-app .estado .desc b { color: var(--ink); }
+
+  #zeus-app .pendientes li {
+    display: grid; grid-template-columns: 4px minmax(0, 1fr) auto; gap: 14px; align-items: center;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 11px; padding: 12px 14px 12px 12px;
+  }
+  #zeus-app .pendientes li + li { margin-top: 8px; }
+  #zeus-app .pendientes li::before { content: ""; width: 4px; height: 100%; min-height: 36px; border-radius: 2px; background: var(--warn); }
+  #zeus-app .pendientes li.crit::before { background: var(--crit); }
+  #zeus-app .pendientes li.ok::before { background: var(--good); }
+  #zeus-app .pendientes b { display: block; font-size: 15px; }
+  #zeus-app .pendientes span.d { display: block; color: var(--ink-2); font-size: 14px; margin-top: 2px; }
+
+  #zeus-app .paso { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; }
+  #zeus-app .paso .k { font-size: 12px; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; }
+  #zeus-app .paso .hecho { color: var(--ink-2); font-size: 14.5px; }
+  #zeus-app .paso .fila { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  #zeus-app .paso .coste { color: var(--ink-3); font-size: 13.5px; }
+  #zeus-app .paso .sec { display: flex; gap: 6px 18px; flex-wrap: wrap; font-size: 14px; color: var(--ink-2); }
+
+  #zeus-app .etiqueta-viejo { font-size: 13px; color: var(--ink-3); text-align: center; padding: 4px 0; }
+  #zeus-app .viejo { opacity: .55; pointer-events: none; filter: grayscale(.3); }
+
+  /* ---------- tarea en curso / resultado ---------- */
+  #zeus-app .tarea { border-radius: 12px; border: 1px solid var(--accent-soft); background: var(--accent-soft); padding: 14px 16px; display: grid; gap: 8px; overflow-wrap: anywhere; min-width: 0; }
+  #zeus-app .tarea pre { overflow-wrap: anywhere; word-break: break-word; max-width: 100%; }
+  #zeus-app .tarea b { color: var(--accent-ink); }
+  #zeus-app .tarea .barra { height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--accent) 22%, transparent); overflow: hidden; }
+  #zeus-app .tarea .barra i { display: block; height: 100%; width: 30%; background: var(--accent); }
+  #zeus-app .tarea.trabajando .barra i { animation: zeus-indet 1.1s ease-in-out infinite; }
+  @keyframes zeus-indet { 0% { margin-left: -30%; } 100% { margin-left: 100%; } }
+  #zeus-app .tarea.lista { background: var(--good-soft); border-color: var(--good-line); }
+  #zeus-app .tarea.lista b { color: var(--good-ink); }
+  #zeus-app .tarea.fallo { background: var(--crit-soft); border-color: var(--crit-line); }
+  #zeus-app .tarea.fallo b { color: var(--crit-ink); }
+  #zeus-app .tarea .cerrar { justify-self: end; }
+  /* #tarea (el resultado de la última acción) es la única .tarea que flota: vive
+     fuera de las secciones para verse sin importar en cuál sección estés. Las
+     demás .tarea (cont-veredicto, sim-veredicto, sos-veredicto) siguen inline
+     dentro de su propio modal/consola, sin tocar. */
+  #zeus-app #tarea {
+    position: fixed; top: 16px; right: 16px; z-index: 550;
+    width: min(380px, calc(100vw - 32px)); max-width: calc(100vw - 32px);
+    box-shadow: 0 10px 28px rgba(0,0,0,.3);
+  }
+  #zeus-app #tarea[hidden] { display: none; }
+
+  /* ---------- Panorama en vivo: anillos de estado del servidor en un solo pantallazo ---------- */
+  #zeus-app .panorama {
+    border-radius: 16px; padding: 18px 18px 14px; margin-bottom: 18px;
+    background: radial-gradient(120% 160% at 0% 0%, color-mix(in srgb, var(--accent) 16%, var(--surface)) 0%, var(--surface) 60%);
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+  }
+  #zeus-app .panorama-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  #zeus-app .panorama-head h3 { margin: 0; font-size: 17px; letter-spacing: -.01em; }
+  #zeus-app .panorama-head .sub { font-size: 12.5px; color: var(--ink-3); }
+  #zeus-app .panorama-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  @media (max-width: 980px) { #zeus-app .panorama-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 480px) { #zeus-app .panorama-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  #zeus-app .pgauge {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 14px 12px 12px; display: grid; justify-items: center; gap: 6px; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  #zeus-app .pgauge::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 3px;
+    background: var(--pg-color, var(--accent));
+  }
+  #zeus-app .pgauge .anillo { position: relative; width: 108px; height: 108px; }
+  #zeus-app .pgauge .anillo svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  #zeus-app .pgauge .anillo .pista { fill: none; stroke: var(--border); stroke-width: 10; }
+  #zeus-app .pgauge .anillo .valor { fill: none; stroke: var(--pg-color, var(--accent)); stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset .6s ease-out, stroke .3s; }
+  #zeus-app .pgauge .anillo .centro {
+    position: absolute; inset: 0; display: grid; place-items: center; line-height: 1.05;
+  }
+  #zeus-app .pgauge .anillo .num { font-size: 24px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--pg-color, var(--ink)); }
+  #zeus-app .pgauge .anillo .unidad { font-size: 11px; color: var(--ink-3); }
+  #zeus-app .pgauge .etiqueta { font-size: 13px; font-weight: 700; margin-top: 2px; }
+  #zeus-app .pgauge .detalle { font-size: 11.5px; color: var(--ink-2); }
+  #zeus-app .pgauge .chispa { width: 100%; height: 22px; margin-top: 2px; }
+  #zeus-app .pgauge .chispa polyline { fill: none; stroke: var(--pg-color, var(--accent)); stroke-width: 1.6; opacity: .8; }
+  #zeus-app .pgauge .chispa path.area { fill: var(--pg-color, var(--accent)); opacity: .12; stroke: none; }
+
+  /* ---------- síntomas ---------- */
+  #zeus-app .sintomas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  #zeus-app .sintoma { display: grid; gap: 8px; align-content: start; padding: 16px; }
+  #zeus-app .sintoma h4 { font-size: 16px; }
+  #zeus-app .sintoma p { color: var(--ink-2); font-size: 14px; }
+  #zeus-app .sintoma .btn { margin-top: 4px; }
+
+  /* ---------- servicios ---------- */
+  #zeus-app .servicios li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid var(--border); }
+  #zeus-app .servicios li:first-child { border-top: 0; }
+  #zeus-app .servicios .led { width: 10px; height: 10px; border-radius: 50%; background: var(--good); }
+  #zeus-app .servicios li.crit .led { background: var(--crit); animation: zeus-latido 1.2s infinite; }
+  #zeus-app .servicios .n { font-weight: 600; }
+  #zeus-app .servicios .tec { color: var(--ink-3); font-size: 12.5px; font-weight: 400; margin-left: 6px; }
+  #zeus-app .servicios .d { color: var(--ink-2); font-size: 13.5px; }
+  #zeus-app .servicios .st { font-size: 14px; color: var(--good-ink); font-weight: 600; white-space: nowrap; }
+  #zeus-app .servicios li.crit .st { color: var(--crit-ink); }
+  #zeus-app .servicios .st small { display: block; color: var(--ink-3); font-weight: 400; font-size: 12.5px; }
+
+  /* ---------- tiles de métricas ---------- */
+  #zeus-app .grid { display: grid; gap: 14px; }
+  #zeus-app .g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  #zeus-app .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #zeus-app .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #zeus-app .g21 { grid-template-columns: 1.55fr 1fr; }
+  #zeus-app .tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 13px 15px 11px; display: grid; gap: 7px; box-shadow: var(--shadow); }
+  #zeus-app .tile .k { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+  #zeus-app .tile .v { font-size: 23px; font-weight: 700; letter-spacing: -.02em; }
+  #zeus-app .tile .v small { font-size: 12.5px; color: var(--ink-3); font-weight: 400; margin-left: 2px; }
+  #zeus-app .tile .foot { font-size: 13px; color: var(--ink-2); }
+  #zeus-app .bar { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+  #zeus-app .bar > i { display: block; height: 100%; border-radius: 3px; background: var(--good); }
+  #zeus-app .bar > i.warn { background: var(--warn); }
+  #zeus-app .bar > i.crit { background: var(--crit); }
+
+  #zeus-app .linea { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px 18px; }
+  #zeus-app .linea .t { flex: 1; min-width: 200px; }
+  #zeus-app .linea .t b { display: block; }
+  #zeus-app .linea .t span { color: var(--ink-2); font-size: 14px; }
+
+  /* ---------- historial ---------- */
+  #zeus-app .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  #zeus-app .chip { border: 1px solid var(--border-2); background: var(--surface); border-radius: 999px; padding: 7px 14px; cursor: pointer; font-size: 14px; min-height: 36px; }
+  #zeus-app .chip[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-ink); border-color: var(--accent-soft); font-weight: 600; }
+  #zeus-app .dia { font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; padding: 12px 0 4px; }
+  #zeus-app .evento { display: grid; grid-template-columns: 56px 4px minmax(0, 1fr); gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); align-items: start; }
+  #zeus-app .evento .h { color: var(--ink-3); font-size: 14px; padding-top: 2px; }
+  #zeus-app .evento .m { width: 4px; border-radius: 2px; min-height: 100%; align-self: stretch; background: var(--good); }
+  #zeus-app .evento.warn .m { background: var(--warn); }
+  #zeus-app .evento.crit .m { background: var(--crit); }
+  #zeus-app .evento.info .m { background: var(--border-2); }
+  #zeus-app .evento b { display: block; }
+  #zeus-app .evento span { color: var(--ink-2); font-size: 14px; }
+
+  #zeus-app .chart-wrap { position: relative; }
+  #zeus-app svg.chart { display: block; width: 100%; height: auto; }
+  #zeus-app .tip {
+    position: absolute; pointer-events: none; opacity: 0; transform: translate(-50%, -120%);
+    background: var(--ink); color: var(--ground); border-radius: 6px; padding: 5px 8px;
+    font-size: 11.5px; white-space: nowrap; font-family: ui-monospace, monospace; transition: opacity .1s;
+  }
+
+  /* ---------- tablas ---------- */
+  #zeus-app table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  #zeus-app .tw { overflow-x: auto; }
+  #zeus-app th { text-align: left; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); padding: 0 10px 8px 0; white-space: nowrap; }
+  #zeus-app td { padding: 10px 10px 10px 0; border-top: 1px solid var(--border); vertical-align: middle; }
+  #zeus-app .num { text-align: right; font-variant-numeric: tabular-nums; }
+  #zeus-app .ok-t { color: var(--good-ink); font-weight: 600; }
+  #zeus-app .crit-t { color: var(--crit-ink); font-weight: 600; }
+  #zeus-app .warn-t { color: var(--warn-ink); font-weight: 600; }
+  #zeus-app .mute-t { color: var(--ink-3); }
+
+  #zeus-app .revision { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--border); }
+  #zeus-app .revision:first-child { border-top: 0; }
+  #zeus-app .revision .mk { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 800; }
+  #zeus-app .revision .mk.ok { background: var(--good-soft); color: var(--good-ink); }
+  #zeus-app .revision .mk.wa { background: var(--warn-soft); color: var(--warn-ink); }
+  #zeus-app .revision .mk.no { background: var(--crit-soft); color: var(--crit-ink); }
+  #zeus-app .revision b { display: block; }
+  #zeus-app .revision span { color: var(--ink-2); font-size: 14px; }
+
+  #zeus-app details { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px; }
+  #zeus-app summary { cursor: pointer; color: var(--accent-ink); font-weight: 600; padding: 6px 0; }
+  #zeus-app .aviso-tec { background: var(--surface-2); border-radius: 10px; padding: 12px 14px; color: var(--ink-2); font-size: 14px; }
+  #zeus-app .note { font-size: 11.5px; color: var(--ink-3); }
+
+  #zeus-app .lista-mas li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px 18px; border-top: 1px solid var(--border); cursor: pointer; min-height: 60px; }
+  #zeus-app .lista-mas li:first-child { border-top: 0; }
+  #zeus-app .lista-mas b { display: block; }
+  #zeus-app .lista-mas span { color: var(--ink-2); font-size: 14px; }
+  #zeus-app .lista-mas .flecha { color: var(--ink-3); font-size: 20px; }
+
+  #zeus-app .ajuste { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px 18px; border-top: 1px solid var(--border); }
+  #zeus-app .ajuste:first-child { border-top: 0; }
+  #zeus-app .ajuste b { display: block; }
+  #zeus-app .ajuste span { color: var(--ink-2); font-size: 14px; }
+
+  #zeus-app .placeholder {
+    border: 1px dashed var(--border-2); border-radius: var(--r); padding: 22px;
+    color: var(--ink-3); font-size: 14px; display: grid; gap: 6px; justify-items: start;
+  }
+  #zeus-app .placeholder b { color: var(--ink-2); font-size: 15px; }
+
+  /* ---------- hoja de confirmación / modal ---------- */
+  #zeus-app .scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 40; display: grid; place-items: center; padding: 16px; }
+  #zeus-app .hoja { background: var(--surface); border-radius: 16px; width: min(460px, 100%); padding: 22px 22px 18px; display: grid; gap: 14px; box-shadow: var(--shadow); }
+  #zeus-app .hoja h3 { font-size: 20px; }
+  #zeus-app .hoja p { color: var(--ink-2); }
+  #zeus-app .hoja .datos { display: grid; gap: 6px; font-size: 14.5px; }
+  #zeus-app .hoja .datos div { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 10px; }
+  #zeus-app .hoja .datos span:first-child { color: var(--ink-3); }
+  #zeus-app .hoja input[type="text"] {
+    font: inherit; font-size: 16px; padding: 11px 12px; border-radius: 9px;
+    border: 1px solid var(--border-2); background: var(--ground); color: var(--ink); width: 100%;
+  }
+  #zeus-app .hoja input[type="text"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  #zeus-app .hoja .palabra { font-weight: 700; font-family: ui-monospace, monospace; }
+  #zeus-app .hoja .botones { display: grid; gap: 8px; margin-top: 4px; }
+
+  /* ---------- pestañas de celular ---------- */
+  #zeus-app .tabbar {
+    display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  #zeus-app .tab {
+    flex: 1; display: grid; justify-items: center; gap: 3px; padding: 9px 4px 8px; min-height: var(--tab-h);
+    background: none; border: 0; cursor: pointer; font-size: 12px; color: var(--ink-3); position: relative;
+  }
+  #zeus-app .tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  #zeus-app .tab[aria-current="true"] { color: var(--accent-ink); font-weight: 700; }
+  #zeus-app .tab .badge { position: absolute; top: 8px; left: calc(50% + 8px); margin: 0; }
+
+  #zeus-app .toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 20px);
+    background: var(--ink); color: var(--ground); border-radius: 9px; padding: 11px 16px;
+    font-size: 13px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: all .18s;
+    z-index: 40; max-width: 90vw;
+  }
+  #zeus-app .toast[data-show="true"] { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ---------- responsivo: nunca scroll horizontal de toda la página,
+     solo .tw (tablas anchas) se desplazan dentro de su contenedor ---------- */
+  @media (max-width: 1000px) {
+    #zeus-app .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #zeus-app .g3, #zeus-app .g2, #zeus-app .g21 { grid-template-columns: minmax(0, 1fr); }
+    #zeus-app .sintomas { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 760px) {
+    #zeus-app { font-size: 16px; }
+    #zeus-app .shell { grid-template-columns: minmax(0, 1fr); }
+    #zeus-app .rail { display: none; }
+    #zeus-app .tabbar { display: flex; }
+    #zeus-app .main { padding: 12px 14px calc(var(--tab-h) + 24px + env(safe-area-inset-bottom)); max-width: 100%; }
+    #zeus-app .top { padding: 8px 12px; }
+    #zeus-app .top .revisado { display: none; }
+    #zeus-app .brand-name { display: none; }
+    #zeus-app .estado { padding: 16px; }
+    #zeus-app .estado h1 { font-size: 22px; }
+    #zeus-app .pendientes li { grid-template-columns: 4px minmax(0, 1fr); }
+    #zeus-app .pendientes li .btn { grid-column: 2; width: 100%; }
+    #zeus-app .paso .fila .btn { width: 100%; }
+    #zeus-app .servicios li { grid-template-columns: 10px minmax(0, 1fr) auto; }
+    #zeus-app .servicios .d, #zeus-app .servicios .tec { display: none; }
+    #zeus-app .servicios li .btn { grid-column: 2 / span 2; justify-self: end; margin-top: -4px; }
+    #zeus-app .linea .btn { width: 100%; }
+    #zeus-app .view-head h2 { font-size: 22px; }
+    #zeus-app .card-head, #zeus-app .card-body { padding-inline: 14px; }
+    #zeus-app .card-body { padding-bottom: 14px; }
+    #zeus-app .evento { grid-template-columns: 48px 4px minmax(0, 1fr); }
+    #zeus-app .sintoma .btn { width: 100%; }
+    #zeus-app .btn.sm { min-height: 44px; }
+
+    #zeus-app table.tarjetas thead { display: none; }
+    #zeus-app table.tarjetas, #zeus-app table.tarjetas tbody, #zeus-app table.tarjetas tr, #zeus-app table.tarjetas td { display: block; }
+    #zeus-app table.tarjetas tr { border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; background: var(--surface); }
+    #zeus-app table.tarjetas td { border: 0; padding: 4px 0; display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 8px; text-align: left; }
+    #zeus-app table.tarjetas td::before { content: attr(data-l); color: var(--ink-3); font-size: 13px; font-weight: 400; }
+    #zeus-app table.tarjetas td.num { text-align: left; }
+
+    #zeus-app .scrim { place-items: end center; padding: 0; }
+    #zeus-app .hoja { border-radius: 18px 18px 0 0; width: 100%; padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
+  }
+  /* ---------- SOS / Registros / Contenedores (secciones nuevas) ---------- */
+  #zeus-app .fila { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  #zeus-app .pasos { padding-left: 20px; display: grid; gap: 6px; color: var(--ink-2); font-size: 14px; }
+  #zeus-app .rail button.sos-nav { background: var(--crit-soft); color: var(--crit-ink); font-weight: 700; border: 1px solid var(--crit-ink); margin-bottom: 4px; }
+  #zeus-app .rail button.sos-nav:hover { background: var(--crit-ink); color: var(--on-crit, #fff); }
+  #zeus-app .rail button.sos-nav[aria-current="true"] { background: var(--crit-ink); color: var(--on-crit, #fff); }
+  #zeus-app .tab.sos-nav { color: var(--crit-ink); font-weight: 700; }
+  #zeus-app .tab.sos-nav[aria-current="true"] { color: var(--crit-ink); }
+  #zeus-app .badge.aviso { background: var(--warn); display: block; }
+  #zeus-app .servicios li.warn .led { background: var(--warn); }
+  #zeus-app .servicios li.warn .st { color: var(--warn-ink); }
+  #zeus-app .servicios .acciones { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  #zeus-app .servicios li.tres-cols { grid-template-columns: 10px minmax(0, 1fr) auto; }
+  #zeus-app .hoja input[type="password"] {
+    font: inherit; font-size: 16px; padding: 11px 12px; border-radius: 9px;
+    border: 1px solid var(--border-2); background: var(--ground); color: var(--ink); width: 100%;
+  }
+  #zeus-app .hoja input[type="password"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  #zeus-app #sos-veredicto ol { padding-left: 20px; display: grid; gap: 4px; margin-top: 8px; }
+  #zeus-app #sos-veredicto p { margin-top: 6px; color: var(--ink-2); }
+  #zeus-app #sos-veredicto b { font-size: 17px; }
+  @media (max-width: 760px) {
+    #zeus-app .servicios .acciones { grid-column: 1 / -1; justify-content: flex-start; margin-top: 6px; }
+    #zeus-app .servicios li:has(.acciones) { grid-template-columns: 10px minmax(0, 1fr) auto; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #zeus-app *, #zeus-app *::before, #zeus-app *::after { animation: none !important; transition: none !important; }
+  }
+  /* ---------- Botones de ayuda (?) para las secciones ---------- */
+  #zeus-app .btn-ayuda {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%; margin-left: 8px; padding: 0;
+    background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--border-2);
+    font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+    transition: all .15s ease-out;
+  }
+  #zeus-app .btn-ayuda:hover { background: var(--border-2); color: var(--ink); }
+  #zeus-app .btn-ayuda:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- Centi: burbuja de chat con el agente ---------- */
+  #centi-bubble {
+    position: fixed; right: 20px; bottom: 20px; z-index: 500;
+    width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer;
+    background: var(--accent); color: var(--on-accent, #fff); font-weight: 800; font-size: 15px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.28); display: flex; align-items: center; justify-content: center;
+  }
+  #centi-bubble:hover { filter: brightness(1.08); }
+  #centi-panel {
+    position: fixed; right: 20px; bottom: 88px; z-index: 500;
+    width: min(360px, calc(100vw - 32px)); max-height: min(520px, calc(100vh - 140px));
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: 0 10px 32px rgba(0,0,0,.32); display: flex; flex-direction: column; overflow: hidden;
+  }
+  #centi-panel[hidden] { display: none; }
+  #centi-panel .centi-head {
+    padding: 12px 14px; background: var(--accent); color: var(--on-accent, #fff);
+    display: flex; align-items: center; justify-content: space-between; font-weight: 700;
+  }
+  #centi-panel .centi-head button { background: transparent; border: none; color: inherit; font-size: 18px; cursor: pointer; line-height: 1; }
+  #centi-msgs { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; min-height: 160px; }
+  .centi-msg { max-width: 88%; padding: 8px 11px; border-radius: 10px; font-size: 13.5px; line-height: 1.5; white-space: pre-wrap; }
+  .centi-msg.yo { align-self: flex-end; background: var(--accent-soft, var(--surface-2)); color: var(--ink); }
+  .centi-msg.centi { align-self: flex-start; background: var(--surface-2); color: var(--ink); }
+  .centi-msg.pensando { align-self: flex-start; color: var(--ink-2); font-style: italic; }
+  #centi-form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--border); }
+  #centi-input { flex: 1; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--border-2); background: var(--surface-2); color: var(--ink); font: inherit; }
+  #centi-form button { padding: 9px 14px; border-radius: 8px; border: none; background: var(--accent); color: var(--on-accent, #fff); font-weight: 700; cursor: pointer; }
+  #centi-selection-btn {
+    position: fixed; z-index: 600; padding: 6px 12px; border-radius: 20px; border: none;
+    background: var(--accent); color: var(--on-accent, #fff); font-size: 12.5px; font-weight: 700;
+    cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.3);
+  }
+  #centi-selection-btn[hidden] { display: none; }
+</style>
+</head><body>
+<div id="zeus-app" data-estado="cargando">
+
+<header class="top">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">Z</div>
+    <span class="brand-name">Centinela Zeus</span>
+  </div>
+  <span id="pill-estado" class="pill mute"><span class="ic"></span>Cargando</span>
+  <span id="pill-avisos"></span>
+  <span class="revisado" id="sello">—</span>
+</header>
+
+<div class="shell">
+  <!-- ============ NAV ESCRITORIO ============ -->
+  <nav class="rail" aria-label="Secciones">
+    <button data-go="sos" class="sos-nav">SOS <span class="badge" id="sos-badge-rail"></span></button>
+    <div class="rail-label">Vigilancia</div>
+    <button data-go="inicio" aria-current="true">Inicio <span class="badge"></span></button>
+    <button data-go="historial">Historial</button>
+    <button data-go="registros">Registros</button>
+    <button data-go="copias">Copias de seguridad</button>
+    <button data-go="contenedores">Contenedores</button>
+    <div class="sep"></div>
+    <div class="rail-label">Mantenimiento</div>
+    <button data-go="seguridad">Seguridad</button>
+    <button data-go="optimizacion">Optimización</button>
+    <button data-go="limpieza">Limpieza</button>
+    <button data-go="tecnico">Datos técnicos</button>
+    <div class="sep"></div>
+    <div class="rail-label">Configuración</div>
+    <button data-go="simulacros">Simulacros</button>
+    <button data-go="ajustes">Ajustes</button>
+    <button data-go="permisos">Permisos</button>
+    <div class="sep"></div>
+    <div class="foot">
+      <span>Tu proveedor · Región</span>
+      <span>Ubuntu 22.04 · 2 CPU · 4 GB</span>
+      <span id="pie-arranque">—</span>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- ============ SOS ============ -->
+    <section class="view" data-view="sos" hidden>
+      <div class="view-head">
+        <h2>SOS</h2><button class="btn-ayuda" data-ayuda="sos" title="Ayuda de esta sección" aria-label="Ayuda: SOS">?</button>
+        <p>Un solo botón: Centinela diagnostica, guarda la evidencia, repara lo que encuentre y verifica que todo atienda. Te dice qué hizo al terminar. Es lo mismo que escribir "sos" por WhatsApp.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>En vivo</h3><span class="sub" id="sos-estado-sub">Ningún SOS en curso</span></div>
+        <div class="card-body tight">
+          <div class="fila">
+            <span id="sos-pill" class="pill mute"><span class="ic"></span>Inactivo</span>
+            <button class="btn danger" id="sos-lanzar">Ejecutar SOS ahora</button>
+          </div>
+          <p class="note" id="sos-bloqueo-simulacro" hidden>Hay un simulacro en curso. El SOS espera a que termine.</p>
+          <pre id="sos-consola" class="mono" style="margin-top:12px;max-height:360px;overflow:auto;white-space:pre-wrap"></pre>
+          <div id="sos-veredicto" hidden>
+            <b id="sos-veredicto-titulo"></b>
+            <p id="sos-veredicto-encontro"></p>
+            <p id="sos-veredicto-clientes"></p>
+            <ol id="sos-veredicto-acciones"></ol>
+            <p id="sos-veredicto-detencion" hidden></p>
+            <div class="fila">
+              <button class="btn sm" id="sos-ver-evidencia">Ver la evidencia</button>
+              <button class="btn sm" id="sos-copiar-mensaje">Copiar el resumen</button>
+            </div>
+            <details id="sos-hipotesis-ia" hidden><summary>Hipótesis de la IA (aproximadas)</summary><p id="sos-hipotesis-ia-texto"></p></details>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Límites de seguridad</h3><span class="sub" id="sos-limites-sub">—</span></div>
+        <div class="card-body tight" id="sos-limites"><p class="note">Cargando…</p></div>
+      </div>
+
+      <details open>
+        <summary>Cómo funciona el protocolo</summary>
+        <ol class="pasos" id="sos-protocolo">
+          <li>Diagnosticar: qué está roto y desde cuándo.</li>
+          <li>¿Afecta a clientes?</li>
+          <li>Guardar la evidencia antes de tocar nada.</li>
+          <li>Reiniciar solo el servicio que falla.</li>
+          <li>Si es falta de espacio o memoria, liberar primero.</li>
+          <li>Si hay que reiniciar varios, en orden: base de datos → memoria de búsqueda → bot → puerta de entrada.</li>
+          <li>¿Se rompió justo tras un cambio? Deshacerlo (máximo 1 por día).</li>
+          <li>Reiniciar el servidor completo (último recurso, máximo 1 por día).</li>
+          <li>Confirmar que de verdad volvió, después de cada paso.</li>
+        </ol>
+      </details>
+
+      <details>
+        <summary>Últimas corridas</summary>
+        <div class="tw" style="margin-top:10px">
+          <table class="tarjetas">
+            <thead><tr><th>Cuándo</th><th>Qué encontró</th><th>Resultado</th><th class="num">Acciones</th></tr></thead>
+            <tbody id="sos-tb-ultimas"><tr><td colspan="4" class="note">Sin corridas todavía.</td></tr></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <!-- ============ INICIO ============ -->
+    <section class="view" data-view="inicio">
+
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:0 0 0 2px">
+        <h2 style="margin:0">Inicio</h2><button class="btn-ayuda" data-ayuda="inicio" title="Ayuda de esta sección" aria-label="Ayuda: Inicio">?</button>
+      </div>
+
+      <!-- ============ Auditoría completa: un botón que revisa todo ============ -->
+      <div class="card" id="card-auditoria360">
+        <div class="card-head"><h3>Auditoría completa</h3><span class="sub" id="a360-sub">Seguridad, base de datos, capacidad, servicios, copias y tareas en una sola pasada. Corre sola a las 6:00 a. m.</span></div>
+        <div class="card-body tight">
+          <div class="fila">
+            <button class="btn primary" id="a360-btn">Auditar todo</button>
+            <span id="a360-pill" class="pill mute"><span class="ic"></span>Sin datos</span>
+            <span class="sub" id="a360-ultima"></span>
+          </div>
+          <pre id="a360-consola" class="mono" hidden style="margin-top:12px;max-height:240px;overflow:auto;white-space:pre-wrap"></pre>
+          <div id="a360-cuerpo" style="margin-top:12px"></div>
+        </div>
+      </div>
+
+      <!-- ============ Panorama en vivo: 5 indicadores de un vistazo ============ -->
+      <div class="panorama">
+        <div class="panorama-head">
+          <h3>Panorama en vivo</h3>
+          <span class="sub" id="panorama-hora">Actualizado hace 0 s</span>
+        </div>
+        <div class="panorama-grid">
+          <div class="pgauge" id="pg-cpu"></div>
+          <div class="pgauge" id="pg-ram"></div>
+          <div class="pgauge" id="pg-disco"></div>
+          <div class="pgauge" id="pg-contenedores"></div>
+          <div class="pgauge" id="pg-bot"></div>
+          <div class="pgauge" id="pg-seguridad"></div>
+          <div class="pgauge" id="pg-docker"></div>
+          <div class="pgauge" id="pg-velocidad"></div>
+          <div class="pgauge" id="pg-basedatos"></div>
+          <div class="pgauge" id="pg-red"></div>
+        </div>
+      </div>
+
+      <!-- Veredicto: un solo bloque que cambia de forma según el estado real -->
+      <div class="estado mute" id="estado-bloque">
+        <div class="estado-head">
+          <span class="estado-dot" id="estado-dot"></span>
+          <div>
+            <h1 id="estado-titulo">Cargando…</h1>
+            <p class="desc" id="estado-desc">Leyendo el estado del servidor.</p>
+          </div>
+        </div>
+
+        <!-- solo en crisis: qué ya hizo Centinela -->
+        <div class="paso" id="estado-hecho-bloque" hidden>
+          <span class="k">Qué ya hizo Centinela</span>
+          <p class="hecho" id="estado-hecho-texto"></p>
+        </div>
+
+        <!-- solo en crisis: un siguiente paso -->
+        <div class="paso" id="estado-acciones-bloque" hidden>
+          <span class="k">Qué hacer ahora</span>
+          <div class="fila" id="estado-accion-principal"></div>
+          <div class="sec" id="estado-acciones-secundarias"></div>
+        </div>
+
+        <!-- solo sin conexión: reintentar -->
+        <div class="paso" id="estado-off-bloque" hidden>
+          <span class="k">Qué hacer ahora</span>
+          <div class="fila">
+            <button class="btn primary" id="reintentar">Reintentar</button>
+            <button class="btn" data-hoja="informe">Avisar al técnico por WhatsApp</button>
+          </div>
+          <p class="hecho">Centinela te avisa por WhatsApp apenas el servidor vuelva a responder.</p>
+        </div>
+
+        <!-- Pendientes: antes "Necesita tu atención" (id conservado: #avisos) -->
+        <ul class="pendientes" id="avisos">
+          <li><span></span><div><b>Leyendo pendientes…</b></div><span></span></li>
+        </ul>
+      </div>
+
+      <div id="resto-inicio" class="view" style="gap:18px">
+        <p class="etiqueta-viejo" id="etiqueta-viejo" hidden>Los datos de abajo son de la última lectura recibida.</p>
+
+        <!-- ¿Algo anda mal? tarjetas por síntoma, no por comando -->
+        <div>
+          <div class="card-head" style="padding-inline:0;padding-top:0"><h3>¿Algo anda mal?</h3><span class="sub">Elige lo que ves, no el comando</span></div>
+          <div class="sintomas" style="margin-top:10px">
+            <div class="card sintoma">
+              <h4>El bot de WhatsApp no contesta</h4>
+              <p>Lo apaga y lo vuelve a encender. Tarda unos 30 segundos y no se pierde ninguna conversación.</p>
+              <button class="btn primary" data-accion="reiniciar_contenedor" data-objetivo="zeus-bot">Reiniciar el bot</button>
+            </div>
+            <div class="card sintoma">
+              <h4>La tienda o el bot van lentos</h4>
+              <p>Borra archivos sobrantes y ordena la base de datos. Uno o dos minutos, sin interrumpir nada.</p>
+              <button class="btn" data-accion="optimizar">Hacer limpieza</button>
+            </div>
+            <div class="card sintoma">
+              <h4>Nada funciona</h4>
+              <p>Reinicia el servidor completo. Dos minutos con todo fuera de línea. Úsalo solo si lo anterior no sirvió.</p>
+              <button class="btn danger" data-accion="reiniciar_servidor" data-confirmar="REINICIAR">Reiniciar el servidor</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Servicios -->
+        <div class="card">
+          <div class="card-head"><h3>Servicios</h3><span class="sub" id="sub-serv">—</span></div>
+          <div class="card-body tight tw">
+            <ul class="servicios" id="tb-contenedores-lista">
+              <li><span class="led"></span><div><div class="n">Cargando…</div></div><span class="st"></span><span></span></li>
+            </ul>
+            <!-- tabla técnica equivalente, oculta: conserva id/estructura original tb-contenedores por compatibilidad -->
+            <table hidden>
+              <tbody id="tb-contenedores"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Respuestas del bot a clientes (detector de bot mudo) -->
+        <div class="card linea" id="linea-bot-mudo">
+          <div class="t">
+            <b>Respuestas del bot: <span id="bot-mudo-pill" class="pill mute"><span class="ic"></span>Cargando</span></b>
+            <span id="bot-mudo-detalle"></span>
+          </div>
+          <button class="btn sm" data-go="sos" id="bot-mudo-btn" hidden>Revisar y reparar</button>
+        </div>
+
+        <!-- Última copia de seguridad -->
+        <div class="card linea" id="linea-ultima-copia">
+          <div class="t">
+            <b id="ultima-copia-titulo">Última copia de seguridad: —</b>
+            <span id="ultima-copia-detalle"></span>
+          </div>
+          <button class="btn sm" data-go="copias">Ver copias</button>
+        </div>
+
+        <!-- Informe semanal -->
+        <div class="card" id="card-informe-semanal">
+          <div class="card-head"><h3>Informe de la semana</h3><span class="sub">Llega por WhatsApp cada lunes a las 7:00 a. m.</span></div>
+          <div class="card-body tight" id="informe-semanal-cuerpo">
+            <p class="note">Los mismos datos del mensaje del lunes, calculados ahora con los últimos 7 días.</p>
+            <div class="fila"><button class="btn sm" id="informe-semanal-ver">Ver informe de esta semana</button></div>
+          </div>
+        </div>
+
+        <!-- Tareas programadas (latidos) -->
+        <div class="card" id="card-latidos">
+          <div class="card-head"><h3>Tareas programadas</h3><span class="sub">Cada tarea avisa cuando termina; si alguna no corre, te lo digo aquí</span></div>
+          <div class="card-body tight" id="latidos-cuerpo">
+            <p class="note">Las tareas del calendario, con la hora del último "terminé" de cada una.</p>
+            <div class="fila"><button class="btn sm" id="latidos-ver">Ver tareas programadas</button></div>
+          </div>
+        </div>
+
+        <div class="card" id="card-vigia">
+          <div class="card-head"><h3>Vigía de tendencias</h3><span class="sub">Mira cómo vienen el disco, la memoria, el procesador y los reinicios; avisa solo si algo cambia de rumbo</span></div>
+          <div class="card-body tight" id="vigia-cuerpo"><p class="note">Cargando…</p></div>
+        </div>
+        <div class="card" id="card-guia" hidden>
+          <div class="card-head"><h3>Guía sugerida</h3><span class="sub">Tras el último SOS que no pudo resolver solo</span></div>
+          <div class="card-body tight" id="guia-cuerpo"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HISTORIAL ============ -->
+    <section class="view" data-view="historial" hidden>
+      <div class="view-head">
+        <h2>Historial</h2><button class="btn-ayuda" data-ayuda="historial" title="Ayuda de esta sección" aria-label="Ayuda: Historial">?</button>
+        <p>Qué pasó, cuándo, y qué hizo Centinela o tú. Las caídas quedan explicadas aunque hayan durado un minuto.</p>
+      </div>
+
+      <span id="pill-fallas" class="pill mute" style="justify-self:start"><span class="ic"></span>—</span>
+      <div id="incidente-actual"></div>
+
+      <div class="chips" role="group" aria-label="Filtrar">
+        <button class="chip" data-filtro="todo" aria-pressed="true">Todo</button>
+        <button class="chip" data-filtro="falla" aria-pressed="false">Caídas</button>
+        <button class="chip" data-filtro="reinicio" aria-pressed="false">Reinicios</button>
+        <button class="chip" data-filtro="copia" aria-pressed="false">Copias</button>
+        <button class="chip" data-filtro="accion" aria-pressed="false">Acciones</button>
+      </div>
+      <div class="card">
+        <div class="card-body tight" id="timeline">
+          <p class="note">Cargando…</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Tendencia de la memoria</h3><span class="sub">últimos 7 días</span></div>
+        <div class="card-body tight">
+          <div class="chart-wrap" id="w-ram7"><div class="tip" id="tip-ram7"></div></div>
+        </div>
+      </div>
+
+      <details>
+        <summary>Ver el detalle de las últimas 24 horas</summary>
+        <div class="chart-wrap" id="w-ram" style="margin-top:10px"><div class="tip" id="tip-ram"></div></div>
+      </details>
+
+      <details>
+        <summary id="sumario-reinicios">Reinicios programados</summary>
+        <div class="grid g4" id="tiles-reinicios" style="margin-top:10px"></div>
+        <div class="tw" style="margin-top:10px">
+          <table>
+            <thead><tr><th>Fecha</th><th class="num">Hora</th><th>Tipo</th><th>Resultado</th></tr></thead>
+            <tbody id="tb-reinicios"><tr><td colspan="4" class="note">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </details>
+
+      <details>
+        <summary>Historial detallado de fallas</summary>
+        <div class="tw" style="margin-top:10px">
+          <table>
+            <thead><tr><th>Fecha</th><th>Servicio</th><th class="num">Duración</th><th>Causa</th><th>Cómo se resolvió</th></tr></thead>
+            <tbody id="tb-incidentes"><tr><td colspan="5" class="note">Sin caídas registradas desde que Centinela vigila.</td></tr></tbody>
+          </table>
+        </div>
+      </details>
+
+      <details>
+        <summary>Registro de acciones</summary>
+        <p class="note" style="margin:6px 0">Quién hizo qué y con qué resultado.</p>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Cuándo</th><th>Acción</th><th>Quién</th><th>Resultado</th><th>Detalle</th></tr></thead>
+            <tbody id="tb-registro"><tr><td colspan="5" class="note">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <!-- ============ REGISTROS (evidencia + corridas del SOS) ============ -->
+    <section class="view" data-view="registros" hidden>
+      <div class="view-head">
+        <h2>Registros</h2><button class="btn-ayuda" data-ayuda="registros" title="Ayuda de esta sección" aria-label="Ayuda: Registros">?</button>
+        <p>Todo lo que el SOS encontró e hizo, y la evidencia que guardó antes de tocar nada. Puedes copiarla para pedir ayuda: los datos sensibles ya están ocultados.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Evidencia guardada</h3><span class="sub" id="reg-espacio">—</span></div>
+        <div class="card-body tight">
+          <div class="tw">
+            <table class="tarjetas">
+              <thead><tr><th>Cuándo</th><th>Qué falla</th><th>Clientes</th><th class="num">Tamaño</th><th></th></tr></thead>
+              <tbody id="reg-tb-evidencia"><tr><td colspan="5" class="note">Cargando…</td></tr></tbody>
+            </table>
+          </div>
+          <div class="fila" style="margin-top:10px">
+            <button class="btn sm danger" id="reg-borrar-todos">Borrar todos</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="reg-detalle" hidden>
+        <div class="card-head"><h3 id="reg-detalle-titulo">—</h3><span class="sub" id="reg-detalle-meta">—</span></div>
+        <div class="card-body tight">
+          <p class="note" id="reg-detalle-aviso-abierto" hidden>Esta falla sigue abierta.</p>
+          <div class="fila">
+            <button class="btn primary sm" id="reg-copiar-resumen">Copiar resumen</button>
+            <button class="btn sm" id="reg-copiar-todo">Copiar todo</button>
+            <button class="btn sm danger" id="reg-borrar-uno">Borrar este</button>
+            <button class="btn sm ghost" id="reg-cerrar-detalle">Cerrar</button>
+          </div>
+          <p class="note" id="reg-detalle-enmascarado"></p>
+          <div id="reg-detalle-secciones"></div>
+          <textarea id="reg-portapapeles" aria-hidden="true" tabindex="-1" style="position:absolute;left:-9999px;top:0"></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Lo que hizo el SOS</h3><span class="sub" id="reg-corridas-sub">—</span></div>
+        <div class="card-body tight">
+          <div class="tw">
+            <table class="tarjetas">
+              <thead><tr><th>Cuándo</th><th>Qué encontró</th><th>Resultado</th><th class="num">Acciones</th><th></th></tr></thead>
+              <tbody id="reg-tb-corridas"><tr><td colspan="5" class="note">Cargando…</td></tr></tbody>
+            </table>
+          </div>
+          <div class="fila" style="margin-top:10px">
+            <button class="btn sm danger" id="reg-corridas-borrar-todas">Borrar todas</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="reg-corrida-detalle" hidden>
+        <div class="card-head"><h3 id="reg-corrida-titulo">—</h3><span class="sub" id="reg-corrida-meta">—</span></div>
+        <div class="card-body tight">
+          <div class="fila">
+            <button class="btn primary sm" id="reg-corrida-copiar">Copiar el reporte</button>
+            <button class="btn sm" id="reg-corrida-ver-evidencia">Ver su evidencia</button>
+            <button class="btn sm" id="reg-corrida-ver-consola">Ver la consola</button>
+            <button class="btn sm danger" id="reg-corrida-borrar">Borrar esta</button>
+            <button class="btn sm ghost" id="reg-corrida-cerrar">Cerrar</button>
+          </div>
+          <pre id="reg-corrida-texto" class="mono" style="white-space:pre-wrap;max-height:420px;overflow:auto"></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ COPIAS DE SEGURIDAD ============ -->
+    <section class="view" data-view="copias" hidden>
+      <div class="view-head">
+        <h2>Copias de seguridad</h2><button class="btn-ayuda" data-ayuda="copias" title="Ayuda de esta sección" aria-label="Ayuda: Copias de seguridad">?</button>
+        <p>Cada día a las 3:00 a. m. se guarda una copia completa de la base de datos: ventas, clientes y conversaciones.</p>
+      </div>
+      <div id="aviso-drive"></div>
+      <div class="grid g4" id="tiles-respaldos"></div>
+      <div class="card linea">
+        <div class="t">
+          <b>Guardar una copia ahora</b>
+          <span>Un minuto. No interrumpe nada. Útil antes de un cambio grande.</span>
+        </div>
+        <button class="btn primary" data-accion="respaldar">Guardar copia ahora</button>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Copias guardadas</h3></div>
+        <div class="card-body tight tw">
+          <table class="tarjetas">
+            <thead><tr><th>Fecha</th><th class="num">Tamaño</th><th>En el servidor</th><th>En Drive</th></tr></thead>
+            <tbody id="tb-respaldos"><tr><td colspan="4" class="note">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Prueba de restauración</h3><span class="sub" id="pr-sub">—</span></div>
+        <div class="card-body tight" id="panel-prueba-restauracion"><p class="note">Cargando…</p></div>
+      </div>
+    </section>
+
+    <!-- ============ SEGURIDAD ============ -->
+    <section class="view" data-view="seguridad" hidden>
+      <div class="view-head">
+        <h2>Seguridad</h2><button class="btn-ayuda" data-ayuda="seguridad" title="Ayuda de esta sección" aria-label="Ayuda: Seguridad">?</button>
+        <p>Centinela revisa el servidor todos los días. Casi siempre no hay nada que hacer.</p>
+      </div>
+      <div class="grid g4" id="tiles-seguridad"></div>
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-head"><h3>Revisiones</h3><span class="sub" id="sub-seguridad">—</span></div>
+          <div class="card-body tight" id="checklist"><p class="note">Cargando…</p></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Puertas abiertas al internet</h3></div>
+          <div class="card-body tight"><pre class="mono note" id="puertos" style="margin:0;overflow-x:auto;white-space:pre-wrap"></pre></div>
+        </div>
+      </div>
+      <details>
+        <summary>Ver direcciones bloqueadas ahora</summary>
+        <p class="note" style="margin:6px 0 10px">Desbloquea una solo si bloqueó tu propia conexión por error.</p>
+        <div class="tw">
+          <table class="tarjetas">
+            <thead><tr><th>Dirección</th><th></th></tr></thead>
+            <tbody id="tb-baneos"><tr><td colspan="2" class="note">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </details>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Auditoría completa</h3>
+          <span class="sub" id="aud-completa-sub">Revisa SSH, cortafuegos, usuarios, archivos con contraseñas, Docker, dependencias y credenciales en el código</span>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+            <button class="btn danger" id="aud-completa-lanzar">Auditar ahora</button>
+            <span class="note" id="aud-completa-ultima">Nunca se ha corrido.</span>
+          </div>
+          <pre id="aud-completa-consola" class="mono" hidden style="max-height:320px;overflow:auto;white-space:pre-wrap"></pre>
+          <div id="aud-completa-resultado"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Auditoría rápida</h3><span class="sub">Certificado, puertos, intentos fallidos y cambios de configuración — se revisa sola cada 5 minutos</span></div>
+        <div class="card-body">
+          <div class="placeholder" id="panel-auditoria-profunda">
+            <b>Todavía no hay contenido aquí.</b>
+            <span>Este espacio queda reservado para la auditoría de seguridad ampliada.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ OPTIMIZACIÓN ============ -->
+    <section class="view" data-view="optimizacion" hidden>
+      <div class="view-head">
+        <h2>Optimización</h2><button class="btn-ayuda" data-ayuda="optimizacion" title="Ayuda de esta sección" aria-label="Ayuda: Optimización">?</button>
+        <p>Sugerencias sobre la base de datos para que el bot y la tienda respondan más rápido.</p>
+      </div>
+
+      <!-- Auditoría completa de la base de datos: mismo patrón que la de Seguridad (consola en vivo + tarjeta de resultado). Solo lee, no aplica nada. -->
+      <div class="card">
+        <div class="card-head">
+          <h3>Auditoría de la base de datos</h3>
+          <span class="sub" id="optim-aud-sub">Revisa conexiones, memoria caché, motor y claves, fragmentación, recorridos completos, índices repetidos, crecimiento, memoria reservada, bloqueos y sugerencias pendientes</span>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+            <button class="btn primary" id="optim-aud-lanzar">Auditar ahora</button>
+            <span class="note" id="optim-aud-ultima">Nunca se ha corrido.</span>
+            <span class="note">Solo revisa y sugiere: no cambia nada en la base.</span>
+          </div>
+          <pre id="optim-aud-consola" class="mono" hidden style="max-height:320px;overflow:auto;white-space:pre-wrap"></pre>
+          <div id="optim-aud-resultado"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Sugerencias de índices</h3><span class="sub">A partir de las consultas lentas que se repiten</span></div>
+        <div class="card-body">
+          <div class="placeholder" id="panel-sugerencias-indices">
+            <b>Todavía no hay sugerencias aquí.</b>
+            <span>Este espacio queda reservado para las sugerencias de índices de base de datos.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LIMPIEZA (antes Optimizar) ============ -->
+    <section class="view" data-view="limpieza" hidden>
+      <div class="view-head">
+        <h2>Limpieza</h2><button class="btn-ayuda" data-ayuda="limpieza" title="Ayuda de esta sección" aria-label="Ayuda: Limpieza">?</button>
+        <p>Segura y reversible. No toca tus datos ni apaga nada que esté funcionando. Al terminar dice cuánto liberó.</p>
+      </div>
+      <div class="card linea" style="background:var(--accent-soft);border-color:var(--accent-soft)">
+        <div class="t">
+          <b style="color:var(--accent-ink);font-size:17px">Hacer limpieza ahora</b>
+          <span>Tarda uno o dos minutos.</span>
+        </div>
+        <button class="btn primary" data-accion="optimizar">Hacer limpieza</button>
+      </div>
+      <div class="card" id="panel-optimizar" hidden>
+        <div class="card-head"><h3>Resultado</h3></div>
+        <div class="card-body tight" id="resultado-optimizar"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Qué hace, paso a paso</h3></div>
+        <div class="card-body tight">
+          <div class="revision"><span class="mk ok">1</span><div><b>Borra archivos sobrantes de instalaciones anteriores</b><span>Restos que quedan cada vez que se actualiza un programa.</span></div><span></span></div>
+          <div class="revision"><span class="mk ok">2</span><div><b>Borra versiones viejas de los programas</b><span>Solo las que ya no se usan.</span></div><span></span></div>
+          <div class="revision"><span class="mk ok">3</span><div><b>Borra registros de más de 14 días</b><span>Los registros recientes se conservan por si hay que revisar algo.</span></div><span></span></div>
+          <div class="revision"><span class="mk ok">4</span><div><b>Ordena la base de datos</b><span>Para que el bot y la tienda respondan más rápido.</span></div><span></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DATOS TÉCNICOS ============ -->
+    <section class="view" data-view="tecnico" hidden>
+      <div class="view-head">
+        <h2>Datos técnicos</h2><button class="btn-ayuda" data-ayuda="tecnico" title="Ayuda de esta sección" aria-label="Ayuda: Datos técnicos">?</button>
+        <p>Lo que un técnico va a pedirte. No necesitas entenderlo: cópialo y envíalo.</p>
+      </div>
+      <div class="card linea">
+        <div class="t"><b>Informe técnico</b><span>Estado, recursos, servicios y las últimas fallas en un solo mensaje.</span></div>
+        <button class="btn" id="copiar-informe">Copiar informe</button>
+        <button class="btn primary" data-hoja="informe">Enviar por WhatsApp</button>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Ficha del servidor</h3></div>
+        <div class="card-body tight tw">
+          <table class="tarjetas">
+            <tbody>
+              <tr><td data-l="Dirección">panel.ejemplo.com</td><td data-l="IP" class="mono">203.0.113.10</td></tr>
+              <tr><td data-l="Proveedor">Tu proveedor, Región</td><td data-l="Sistema">Ubuntu 22.04 · 2 CPU · 4 GB</td></tr>
+              <tr><td data-l="Encendido" id="ficha-arranque">—</td><td data-l="Centinela" id="pie-agente">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid g4" id="tiles-datos"></div>
+      <div class="card">
+        <div class="card-head"><h3>Base de datos</h3></div>
+        <div class="card-body tight">
+          <p class="aviso-tec">Esto es para tu técnico. Si el bot va lento, la causa suele estar aquí; la limpieza ya ordena estas tablas.</p>
+          <div class="tw" style="margin-top:12px">
+            <table class="tarjetas">
+              <thead><tr><th>Tabla</th><th class="num">Filas</th><th class="num">Tamaño</th><th class="num">Espacio desaprovechado</th></tr></thead>
+              <tbody id="tb-tablas"><tr><td colspan="4" class="note">Cargando…</td></tr></tbody>
+            </table>
+          </div>
+          <details style="margin-top:12px">
+            <summary>Consultas más lentas registradas</summary>
+            <div class="tw" style="margin-top:10px">
+              <table>
+                <thead><tr><th class="num">Segundos</th><th>Origen</th><th>Consulta</th></tr></thead>
+                <tbody id="tb-lentas"><tr><td colspan="3" class="note">Cargando…</td></tr></tbody>
+              </table>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Procesador, últimas 24 horas</h3></div>
+        <div class="card-body tight">
+          <div class="chart-wrap" id="w-cpu"><div class="tip" id="tip-cpu"></div></div>
+        </div>
+      </div>
+
+      <details>
+        <summary>Predicción detallada (para tu técnico)</summary>
+        <div class="card" style="margin-top:10px">
+          <div class="card-body">
+            <div class="grid g21" style="align-items:center">
+              <div id="gauge"></div>
+              <div>
+                <h3 id="pred-titulo" style="font-size:16px;margin-bottom:6px">Calculando…</h3>
+                <p id="pred-resumen" style="color:var(--ink-2);font-size:13.5px;max-width:60ch;margin-bottom:8px">Leyendo el historial del servidor.</p>
+                <span class="note" id="pred-muestras"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid g2" id="pronosticos" style="margin-top:10px"></div>
+        <div class="card" style="margin-top:10px">
+          <div class="card-head"><h3>Avisos tempranos</h3><span class="sub">lo que suele pasar antes de una caída</span></div>
+          <div class="card-body tight" id="senales"><p class="note">Cargando…</p></div>
+        </div>
+      </details>
+
+      <div class="card">
+        <div class="card-head"><h3>Patrones en los registros</h3><span class="sub" id="logs-sub">—</span></div>
+        <div class="card-body tight" id="panel-logs-patrones"><p class="note">Cargando…</p></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Consultas trabadas de la base de datos</h3><span class="sub" id="bd-procesos-sub">—</span></div>
+        <div class="card-body tight" id="panel-bd-procesos"><p class="note">Cargando…</p></div>
+      </div>
+
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-head"><h3>Latencia de WhatsApp (Kapso)</h3></div>
+          <div class="card-body tight" id="panel-kapso-latencia"><p class="note">Cargando…</p></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Envíos por WhatsApp</h3><span class="sub">para detectar un bucle que gaste saldo</span></div>
+          <div class="card-body tight" id="panel-kapso-gasto"><p class="note">Cargando…</p></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Guías paso a paso (runbooks)</h3><span class="sub">se ejecutan con un clic, con las mismas acciones de siempre</span></div>
+        <div class="card-body tight" id="panel-runbooks"><p class="note">Cargando…</p></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Observación tras un despliegue</h3><span class="sub" id="desp-sub">—</span></div>
+        <div class="card-body tight" id="panel-despliegue-observacion"><p class="note">Cargando…</p></div>
+      </div>
+    </section>
+
+    <!-- ============ AJUSTES ============ -->
+    <section class="view" data-view="ajustes" hidden>
+      <div class="view-head"><h2>Ajustes</h2><button class="btn-ayuda" data-ayuda="ajustes" title="Ayuda de esta sección" aria-label="Ayuda: Ajustes">?</button></div>
+      <div class="card">
+        <div class="ajuste"><div><b>Enviarme el estado por WhatsApp</b><span>Manda el resumen de ahora, para probar que los avisos llegan.</span></div><button class="btn sm" data-accion="enviar_wsp">Enviar</button></div>
+        <div class="ajuste"><div><b>Modo oscuro</b><span>Sigue la configuración del sistema. Puedes forzarlo aquí.</span></div><button class="btn sm" data-act="tema">Cambiar tema</button></div>
+        <div class="ajuste"><div><b>Modo viaje</b><span id="modo-viaje-desc">Silencia los avisos menores; solo avisa si algo se cae por completo.</span></div><button class="btn sm cargando" id="modo-viaje-btn" data-modo-viaje="1">Cargando…</button></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Avisar a un técnico si no confirmo</h3></div>
+        <div class="card-body tight">
+          <div class="ajuste">
+            <div><b>Reenviar avisos graves si no respondo</b><span id="escalamiento-desc">Si un aviso grave no lo confirmas en 15 minutos, se reenvía al técnico cada 30 minutos, hasta 3 veces. Con modo viaje activo no se reenvía nada.</span></div>
+            <button class="btn sm cargando" id="escalamiento-activo-btn" data-escalamiento-activo="1">Cargando…</button>
+          </div>
+          <div class="ajuste">
+            <div>
+              <b>Número del técnico</b>
+              <span id="escalamiento-tecnico-nota">Con el código del país, sin el signo +. Déjalo vacío para que los recordatorios te lleguen a ti.</span>
+              <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+                <input type="tel" id="escalamiento-tecnico-input" inputmode="numeric" maxlength="15" placeholder="Ej.: 573001234567" style="flex:1;min-width:200px">
+                <button class="btn sm" id="escalamiento-guardar-btn">Guardar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Avisos sin confirmar</h3></div>
+        <div class="card-body tight" id="escalamiento-pendientes"><p class="note">Cargando…</p></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Últimas escaladas</h3></div>
+        <div class="card-body tight" id="escalamiento-historial"><p class="note">Cargando…</p></div>
+      </div>
+    </section>
+
+    <!-- ============ PERMISOS (control de autonomía de Centinela) ============ -->
+    <section class="view" data-view="permisos" hidden>
+      <div class="view-head">
+        <h2>Permisos</h2><button class="btn-ayuda" data-ayuda="permisos" title="Ayuda de esta sección" aria-label="Ayuda: Permisos">?</button>
+        <p>Qué puede vigilar Centinela por su cuenta, qué puede reparar sola, y un freno para detener todo de inmediato.</p>
+      </div>
+
+      <div class="card linea" style="background:var(--crit-soft);border-color:var(--crit-line)">
+        <div class="t">
+          <b style="color:var(--crit-ink);font-size:17px">Freno de emergencia</b>
+          <span>Mientras está activo, Centinela diagnostica y avisa, pero no repara nada por su cuenta. Las acciones que tú hagas manualmente en el panel no se ven afectadas.</span>
+        </div>
+        <button class="btn danger cargando" id="permisos-freno-btn" disabled>Cargando…</button>
+      </div>
+      <div class="card">
+        <div class="card-body tight">
+          <div id="permisos-freno-motivo-wrap">
+            <label for="permisos-freno-motivo" class="note" style="display:block;margin-bottom:6px">Motivo (opcional)</label>
+            <input type="text" id="permisos-freno-motivo" placeholder="Ej.: estoy revisando algo a mano" style="width:100%;max-width:420px">
+          </div>
+          <p class="note" id="permisos-freno-info" style="margin-top:10px"></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Horario comercial</h3></div>
+        <div class="card-body tight">
+          <p class="note">Solo se usa para decidir si conviene esperar antes de reiniciar el servidor completo — el resto de las reparaciones no espera a esto.</p>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:end;margin-top:12px">
+            <div>
+              <label for="permisos-horario-inicio" class="note" style="display:block;margin-bottom:6px">Desde (hora Colombia)</label>
+              <input type="number" id="permisos-horario-inicio" min="0" max="23" style="width:80px">
+            </div>
+            <div>
+              <label for="permisos-horario-fin" class="note" style="display:block;margin-bottom:6px">Hasta (hora Colombia)</label>
+              <input type="number" id="permisos-horario-fin" min="0" max="23" style="width:80px">
+            </div>
+            <div>
+              <label style="display:flex;align-items:center;gap:6px">
+                <input type="checkbox" id="permisos-horario-activo"> Activo
+              </label>
+            </div>
+            <button class="btn sm" id="permisos-horario-guardar">Guardar horario</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Permisos por categoría</h3><span class="sub">qué vigila y qué repara sola</span></div>
+        <div class="card-body tight" id="permisos-categorias"><p class="note">Cargando…</p></div>
+        <div class="card-body tight" style="border-top:1px solid var(--border)">
+          <button class="btn primary" id="permisos-guardar">Guardar cambios</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SIMULACROS (ingeniería del caos) ============ -->
+    <section class="view" data-view="simulacros" hidden>
+      <div class="view-head">
+        <h2>Simulacros</h2><button class="btn-ayuda" data-ayuda="simulacros" title="Ayuda de esta sección" aria-label="Ayuda: Simulacros">?</button>
+        <p>Pruebas de emergencia controladas. Cada una provoca a propósito una falla
+           pequeña para comprobar que Centinela la detecta y la arregla, y se revierte
+           sola aunque algo salga mal. Solo pide escribir el nombre en mayúsculas para confirmar.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>En vivo</h3><span class="sub" id="sim-estado-sub">Ningún simulacro en curso</span></div>
+        <div class="card-body tight">
+          <span id="sim-pill" class="pill mute"><span class="ic"></span>Inactivo</span>
+          <pre id="sim-consola" class="mono" style="margin-top:12px;max-height:320px;overflow:auto;white-space:pre-wrap"></pre>
+          <div id="sim-veredicto" hidden></div>
+          <button class="btn danger sm" id="sim-abortar" hidden>Detener y revertir ahora</button>
+        </div>
+      </div>
+
+      <div class="grid g2" id="sim-catalogo"></div>
+
+      <details>
+        <summary>Historial de simulacros</summary>
+        <div class="tw" style="margin-top:10px">
+          <table class="tarjetas">
+            <thead><tr><th>Cuándo</th><th>Simulacro</th><th>Resultado</th><th class="num">Duración</th></tr></thead>
+            <tbody id="sim-tb-historial"><tr><td colspan="4" class="note">Sin simulacros todavía.</td></tr></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <!-- ============ CONTENEDORES ============ -->
+    <section class="view" data-view="contenedores" hidden>
+      <div class="view-head">
+        <h2>Contenedores</h2><button class="btn-ayuda" data-ayuda="contenedores" title="Ayuda de esta sección" aria-label="Ayuda: Contenedores">?</button>
+        <p>Cada servicio del servidor vive en su propio contenedor. Aquí los ves todos,
+           puedes reiniciar uno y mirar en vivo lo que pasa mientras arranca.</p>
+      </div>
+
+      <!-- consola en vivo: comparte diseño con #sim-consola -->
+      <div class="card" id="cont-consola-card">
+        <div class="card-head">
+          <h3>En vivo</h3>
+          <span class="sub" id="cont-consola-sub">Nada en curso</span>
+          <button class="btn sm ghost right" id="cont-consola-cerrar" hidden>Cerrar vista</button>
+        </div>
+        <div class="card-body tight">
+          <span id="cont-pill" class="pill mute"><span class="ic"></span>Inactivo</span>
+          <p class="note" id="cont-consola-aviso" hidden></p>
+          <pre id="cont-consola" class="mono" style="margin-top:12px;max-height:320px;overflow:auto;white-space:pre-wrap"></pre>
+          <div id="cont-veredicto" hidden></div>
+        </div>
+      </div>
+
+      <!-- los de Zeus -->
+      <div class="card">
+        <div class="card-head"><h3>Los de Zeus</h3><span class="sub" id="cont-propios-sub">—</span></div>
+        <div class="card-body tight">
+          <ul class="servicios" id="cont-lista-propios"><li><span class="led"></span><div><div class="n">Cargando…</div></div><span class="st"></span><span></span></li></ul>
+        </div>
+      </div>
+
+      <!-- de otro proyecto -->
+      <div class="card">
+        <div class="card-head"><h3>De otro proyecto</h3><span class="sub">Centinela no los vigila ni los toca solo</span></div>
+        <div class="card-body tight">
+          <p class="aviso-tec" id="cont-ajenos-aviso">Estos contenedores son de otro sistema del negocio. Centinela no los reinicia, no abre incidentes ni te avisa si se caen. Puedes reiniciarlos a mano, con PIN, bajo tu cuenta.</p>
+          <ul class="servicios" id="cont-lista-ajenos" style="margin-top:10px"></ul>
+        </div>
+      </div>
+
+      <!-- ficha (se llena al pulsar "Ficha" en una tarjeta) -->
+      <div class="card" id="cont-ficha-card" hidden>
+        <div class="card-head"><h3 id="cont-ficha-titulo">Ficha</h3><span class="sub" id="cont-ficha-sub"></span><button class="btn sm ghost right" id="cont-ficha-cerrar">Cerrar</button></div>
+        <div class="card-body tight">
+          <div id="cont-ultima-parada"></div>
+          <div class="grid g4" id="cont-ficha-tiles" style="margin-top:12px"></div>
+          <details style="margin-top:12px">
+            <summary>Datos para tu técnico</summary>
+            <div class="tw" style="margin-top:10px">
+              <table class="tarjetas"><tbody id="cont-ficha-tb"></tbody></table>
+            </div>
+            <pre class="mono note" id="cont-ultimas-lineas" style="margin-top:10px;white-space:pre-wrap;overflow-x:auto"></pre>
+          </details>
+        </div>
+      </div>
+
+      <details>
+        <summary>Historial de operaciones hechas desde aquí</summary>
+        <div class="tw" style="margin-top:10px">
+          <table class="tarjetas">
+            <thead><tr><th>Cuándo</th><th>Qué</th><th>Servicio</th><th>Resultado</th><th class="num">Duración</th></tr></thead>
+            <tbody id="cont-tb-operaciones"><tr><td colspan="5" class="note">Sin operaciones todavía.</td></tr></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <!-- ============ MÁS (solo celular) ============ -->
+    <section class="view" data-view="mas" hidden>
+      <div class="view-head"><h2>Más</h2></div>
+      <div class="card">
+        <ul class="lista-mas">
+          <li data-go="contenedores"><div><b>Contenedores</b><span>Reiniciar servicios y verlos en vivo</span></div><span class="flecha" aria-hidden="true">›</span></li>
+          <li data-go="copias"><div><b>Copias de seguridad</b><span>Estado y prueba de restauración</span></div><span class="flecha" aria-hidden="true">›</span></li>
+          <li data-go="registros"><div><b>Registros</b><span>Lo que hizo el SOS y la evidencia guardada</span></div><span class="flecha" aria-hidden="true">›</span></li>
+          <li data-go="seguridad"><div><b>Seguridad</b><span>Revisiones y accesos</span></div><span class="flecha" aria-hidden="true">›</span></li>
+          <li data-go="optimizacion"><div><b>Optimización</b><span>Auditoría de la base y sugerencias de índices</span></div><span class="flecha" aria-hidden="true">›</span></li>
+          <li data-go="limpieza"><div><b>Limpieza</b><span>Liberar espacio del servidor</span></div><span class="flecha" aria-hidden="true">›</span></li>
+          <li data-go="tecnico"><div><b>Datos técnicos</b><span>Para compartir con tu técnico</span></div><span class="flecha" aria-hidden="true">›</span></li>
+          <li data-go="simulacros"><div><b>Simulacros</b><span>Pruebas de emergencia controladas</span></div><span class="flecha" aria-hidden="true">›</span></li>
+          <li data-go="ajustes"><div><b>Ajustes</b><span>Avisos por WhatsApp, tema</span></div><span class="flecha" aria-hidden="true">›</span></li>
+          <li data-go="permisos"><div><b>Permisos</b><span>Freno de emergencia y qué repara sola Centinela</span></div><span class="flecha" aria-hidden="true">›</span></li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ PESTAÑAS DE CELULAR ============ -->
+<nav class="tabbar" aria-label="Secciones">
+  <button class="tab sos-nav" data-go="sos">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v6M12 21v-4M4.2 6.2l4.2 4.2M15.5 13.5l4.3 4.3M3 12h6M15 12h6M4.2 17.8l4.2-4.2M15.5 10.5l4.3-4.3"/></svg>
+    SOS <span class="badge" id="sos-badge-tab"></span>
+  </button>
+  <button class="tab" data-go="inicio" aria-current="true">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>
+    Inicio <span class="badge"></span>
+  </button>
+  <button class="tab" data-go="historial">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    Historial
+  </button>
+  <button class="tab" data-go="mas">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    Más
+  </button>
+</nav>
+
+<!-- ============ HOJA DE CONFIRMACIÓN (informativa, sin escribir) ============ -->
+<div class="scrim" id="scrim-info" hidden>
+  <div class="hoja" role="dialog" aria-modal="true" aria-labelledby="hoja-info-t">
+    <h3 id="hoja-info-t"></h3>
+    <p id="hoja-info-p"></p>
+    <div class="datos" id="hoja-info-datos"></div>
+    <div class="botones">
+      <button class="btn primary" id="hoja-info-ok"></button>
+      <button class="btn" id="hoja-info-no">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL DE CONFIRMACIÓN ESCRITA (reemplaza prompt() nativo) ============ -->
+<div class="scrim" id="scrim-confirmar" hidden>
+  <div class="hoja" role="dialog" aria-modal="true" aria-labelledby="confirmar-t">
+    <h3 id="confirmar-t">Esto interrumpe el servicio</h3>
+    <p id="confirmar-p"></p>
+    <p>Para confirmar, escribe <span class="palabra" id="confirmar-palabra"></span> abajo.</p>
+    <input type="text" id="confirmar-input" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Escribe la palabra de confirmación">
+    <div class="botones">
+      <button class="btn danger" id="confirmar-ok" disabled>Confirmar</button>
+      <button class="btn" id="confirmar-no">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL DE SIMULACROS: confirmación escrita ============ -->
+<!-- Reutiliza el patrón visual (.scrim/.hoja/.datos/.botones/.palabra) del modal de
+     confirmación escrita ya existente (#scrim-confirmar). Ya no pide PIN (se quitó a
+     petición del dueño, 12 sept. 2026): basta con escribir el nombre del simulacro. -->
+<div class="scrim" id="scrim-simulacro" hidden>
+  <div class="hoja" role="dialog" aria-modal="true" aria-labelledby="sim-modal-t">
+    <h3 id="sim-modal-t">Vas a lanzar un simulacro</h3>
+    <p id="sim-modal-desc"></p>
+    <div class="datos" id="sim-modal-datos"></div>
+    <p>Para confirmar, escribe <span class="palabra" id="sim-palabra"></span>.</p>
+    <input type="text" id="sim-confirmacion" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Palabra de confirmación">
+    <p class="note" id="sim-modal-error" style="color:var(--crit-ink)" hidden></p>
+    <div class="botones">
+      <button class="btn danger" id="sim-ok" disabled>Lanzar simulacro</button>
+      <button class="btn" id="sim-cancelar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL DE CONTENEDORES: hoja / palabra / palabra+PIN ============ -->
+<!-- Un solo modal cubre los cuatro niveles de confirmación de la sección Contenedores
+     (ver DISENO-CONTENEDORES.md §6 y §7.2): "ninguna" no abre este modal; "hoja" lo abre
+     sin PIN ni palabra (botón habilitado de entrada); "palabra" muestra solo la palabra;
+     "palabra_pin" muestra ambos y el aviso de "otro proyecto". -->
+<div class="scrim" id="scrim-contenedor" hidden>
+  <div class="hoja" role="dialog" aria-modal="true" aria-labelledby="cont-modal-t">
+    <h3 id="cont-modal-t"></h3>
+    <p id="cont-modal-desc"></p>
+    <div class="estado warn" id="cont-modal-ajeno" hidden style="padding:12px 14px">
+      <p class="desc"><b>Es de otro proyecto.</b> Centinela no lo vigila: si queda mal después de esto, nadie te avisa y no se arregla solo.</p>
+    </div>
+    <div class="datos" id="cont-modal-datos"></div>
+    <label id="cont-orden-wrap" hidden style="display:flex;gap:10px;align-items:flex-start">
+      <input type="checkbox" id="cont-orden" checked>
+      <span id="cont-orden-texto">Reiniciar también el bot de WhatsApp después, para que se vuelva a conectar (recomendado).</span>
+    </label>
+    <div id="cont-pin-wrap" hidden>
+      <label class="note" for="cont-pin">PIN de acción</label>
+      <input type="password" id="cont-pin" autocomplete="off" inputmode="numeric" aria-label="PIN de acción">
+    </div>
+    <div id="cont-palabra-wrap" hidden>
+      <p>Para confirmar, escribe <span class="palabra" id="cont-palabra"></span>.</p>
+      <input type="text" id="cont-confirmacion" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Palabra de confirmación">
+    </div>
+    <p class="note" id="cont-modal-error" style="color:var(--crit-ink)" hidden></p>
+    <div class="botones">
+      <button class="btn danger" id="cont-ok" disabled></button>
+      <button class="btn" id="cont-cancelar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL DE AYUDA: explicación breve de cada sección ============ -->
+<div class="scrim" id="scrim-ayuda" hidden>
+  <div class="hoja" role="dialog" aria-modal="true" aria-labelledby="ayuda-t">
+    <h3 id="ayuda-t"></h3>
+    <p id="ayuda-p" style="color:var(--ink-2);line-height:1.6"></p>
+    <div class="botones">
+      <button class="btn primary" id="ayuda-ok">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Resultado de la última acción (Aplicar índice, Matar consulta, etc.): flotante y
+     fuera de las secciones, para que se vea sin importar en cuál estés parado. Antes
+     vivía dentro de "Inicio" y por eso no se veía nada al aplicar algo desde otra sección. -->
+<div class="tarea" id="tarea" hidden>
+  <b id="tarea-t">Un momento…</b>
+  <span id="tarea-d" style="color:var(--ink-2);font-size:14px"></span>
+  <div class="barra" id="tarea-barra"><i></i></div>
+  <pre id="tarea-log" class="mono" hidden style="white-space:pre-wrap;font-size:12px;background:var(--surface-2);border-radius:8px;padding:8px;max-height:180px;overflow:auto;margin:0"></pre>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn sm ghost" id="tarea-revertir" hidden>Revertir</button>
+    <button class="btn sm ghost cerrar" id="tarea-cerrar" hidden>Ocultar</button>
+  </div>
+</div>
+
+<!-- ============ Centi: burbuja de chat con el agente ============ -->
+<button id="centi-bubble" title="Preguntarle a Centi" aria-label="Abrir chat con Centi">Centi</button>
+<div id="centi-panel" hidden role="dialog" aria-modal="false" aria-labelledby="centi-t">
+  <div class="centi-head">
+    <span id="centi-t">Centi</span>
+    <button id="centi-cerrar" aria-label="Cerrar chat">✕</button>
+  </div>
+  <div id="centi-msgs"></div>
+  <form id="centi-form">
+    <input id="centi-input" type="text" autocomplete="off" placeholder="Pregúntale a Centi lo que sea…" aria-label="Escribe tu pregunta para Centi">
+    <button type="submit">Enviar</button>
+  </form>
+</div>
+<button id="centi-selection-btn" hidden>Preguntarle a Centi</button>
+
+</div><!-- /#zeus-app -->
+
+<script src="app.js"></script>
+</body></html>

@@ -1,0 +1,26 @@
+# Unidad de systemd para Centinela Zeus.
+# Copiar a /etc/systemd/system/zeus-ops.service y luego:
+#   sudo systemctl daemon-reload && sudo systemctl enable --now zeus-ops
+#
+# Corre en el host (no dentro de Docker) a propósito: tiene que poder reiniciar
+# contenedores sin morir con ellos. Escucha solo en 127.0.0.1:4900; el acceso
+# público lo da Traefik con autenticación básica (ver traefik-dynamic.example.yml).
+
+[Unit]
+Description=Centinela Zeus — servicio de control del servidor
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/zeus-ops
+ExecStart=/usr/bin/node /opt/zeus-ops/server.js
+Restart=always
+RestartSec=3
+Environment=NODE_ENV=production
+# Los datos (historial, evidencia, auditorías) viven aquí, fuera del código.
+StateDirectory=zeus-ops
+
+[Install]
+WantedBy=multi-user.target

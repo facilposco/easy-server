@@ -1,0 +1,27 @@
+# Centinela Zeus (easy-server)
+
+> Un ingeniero de servidores senior, en software libre (MIT), para negocios pequeños que no pueden pagar uno. Vigila, diagnostica, repara y explica un VPS Linux con Docker, por WhatsApp y con un panel web, para un dueño que no sabe Linux. Escrito en Node.js 20 sin dependencias externas. Incluye un vigilante externo en Cloudflare Workers que avisa aunque el servidor esté apagado.
+
+Repositorio: https://github.com/facilposco/easy-server
+Licencia: MIT. Idioma del producto: español (Colombia). Versión estable: 1.0.0.
+
+## Qué resuelve
+
+- Caídas del servidor o de un contenedor (bot, base de datos, proxy) sin que nadie esté mirando.
+- Disco o memoria llenos, consultas lentas, índices que faltan o sobran, copias de seguridad que fallan en silencio.
+- Reparación guiada y automática con un protocolo de 9 pasos (SOS) que nunca actúa a ciegas: diagnostica, guarda evidencia y repara de lo menos invasivo a lo más invasivo, verificando entre cada paso.
+- Explicaciones en lenguaje simple: cada hallazgo dice qué significa, qué tan grave es y qué botón lo arregla.
+
+## Documentos
+
+- [README](README.md): qué es, para quién, cómo se instala en 20 minutos.
+- [Tutorial ilustrado](tutorial.html): cómo funciona cada parte, con capturas.
+- [Arquitectura](docs/ARQUITECTURA.md): módulos, contratos, decisiones de diseño.
+- [Instalación paso a paso](docs/INSTALACION.md): systemd, Traefik, cron, .env.
+- [El Worker de Cloudflare](docs/CLOUDFLARE-WORKER.md): vigilante externo y proxy de IA, explicado línea a línea.
+- [Protocolo SOS y reglas](CLAUDE.md): las reglas que no se negocian.
+- [Cómo contribuir](CONTRIBUTING.md).
+
+## Palabras clave
+
+monitoreo de servidores, VPS, Docker, auto-reparación, self-healing, SRE para pymes, DevOps sin ingeniero, WhatsApp alerts, MariaDB, auditoría de seguridad, respaldos verificados, Cloudflare Workers, Gemini, Node.js, open source en español.

@@ -1,0 +1,34 @@
+# Publicación del panel de Centinela detrás de Traefik, con autenticación básica.
+# Copiar a la carpeta de configuración dinámica de tu Traefik (por ejemplo
+# /opt/zeus-proxy/dynamic/panel.yml) y reemplazar el dominio y el hash.
+#
+# Generar el hash de la contraseña (usuario "zeus"):
+#   docker run --rm httpd:2.4-alpine htpasswd -nbB zeus 'TU-CONTRASEÑA'
+# Pega la línea completa que imprime en `users` (Traefik acepta bcrypt).
+#
+# Centinela escucha en 127.0.0.1:4900 en el host. Desde un contenedor de
+# Traefik se alcanza por la IP de la puerta de enlace de la red de Docker
+# (por ejemplo 172.17.0.1) o con `host.docker.internal` si tu Docker lo soporta.
+
+http:
+  routers:
+    zeus-panel:
+      rule: "Host(`panel.ejemplo.com`)"
+      entryPoints: ["https"]
+      service: zeus-panel
+      middlewares: ["zeus-panel-auth"]
+      tls:
+        certResolver: letsencrypt
+
+  middlewares:
+    zeus-panel-auth:
+      basicAuth:
+        realm: "Centinela Zeus"
+        users:
+          - "zeus:$2y$05$REEMPLAZA.ESTE.HASH.CON.EL.QUE.GENERE.HTPASSWD"
+
+  services:
+    zeus-panel:
+      loadBalancer:
+        servers:
+          - url: "http://172.17.0.1:4900"

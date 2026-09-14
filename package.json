@@ -1,0 +1,44 @@
+{
+  "name": "easy-server",
+  "version": "1.0.0",
+  "description": "Centinela Zeus: un ingeniero de servidores senior, en software libre, para negocios pequeños. Vigila, diagnostica, repara y explica un VPS con Docker por WhatsApp y un panel web, sin que el dueño sepa Linux.",
+  "main": "server.js",
+  "private": false,
+  "license": "MIT",
+  "author": "FacilPOS (https://github.com/facilposco)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/facilposco/easy-server.git"
+  },
+  "homepage": "https://github.com/facilposco/easy-server#readme",
+  "bugs": {
+    "url": "https://github.com/facilposco/easy-server/issues"
+  },
+  "keywords": [
+    "server-monitoring",
+    "vps",
+    "docker",
+    "self-healing",
+    "sre",
+    "devops",
+    "whatsapp",
+    "mariadb",
+    "cloudflare-workers",
+    "small-business",
+    "spanish",
+    "ai-ops",
+    "incident-response",
+    "backup",
+    "security-audit",
+    "gemini"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test modulos/pruebas/*.test.js modulos/sos/pruebas/*.test.js",
+    "check": "for f in server.js modulos/*.js modulos/*/*.js; do node --check \"$f\" || exit 1; done && echo OK"
+  },
+  "dependencies": {}
+}

@@ -1,0 +1,20 @@
+# Secretos y credenciales — NUNCA se suben. Copia .env.example a .env y llénalo.
+.env
+*.env
+!.env.example
+.token-prueba
+drive-token.txt
+*.pem
+*.key
+
+# Estado local de herramientas
+.wrangler/
+node_modules/
+.claude/
+.DS_Store
+Thumbs.db
+
+# Datos que genera Centinela en el servidor (viven en /var/lib/zeus-ops, no en el repo)
+datos/
+*.log
+*.jsonl
