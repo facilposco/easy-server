@@ -63,6 +63,9 @@ Estas son capturas reales (sin datos sensibles) de los avisos que Centinela mand
 
 Todo lo que hace el panel también se puede pedir por WhatsApp, sin abrir el navegador. Se escribe `/centinela` seguido de un número (o la palabra `menu`/`ayuda` para volver a ver la lista), y también se le puede hablar en lenguaje natural: reconoce la intención sin gastar una consulta de IA cuando puede contestar con datos reales, y si de verdad hace falta razonar, la usa solo si queda cupo del límite diario.
 
+<p align="center"><img src="docs/capturas/whatsapp-menu-centinela.png" alt="Respuesta real de Centinela a /centinela menu en WhatsApp: las 19 opciones numeradas, cuáles piden confirmación y cómo preguntar en lenguaje natural" width="420"></p>
+<p align="center"><sub>Respuesta real al escribir <code>/centinela menu</code> desde WhatsApp.</sub></p>
+
 | # | Opción | Qué hace |
 |---|---|---|
 | 1 | SOS: revisar y reparar todo (automático) | Lanza el protocolo de emergencia completo: diagnostica, guarda evidencia, repara en orden de menor a mayor impacto y avisa cuando termina. Es la misma opción que el botón SOS del panel. |
@@ -104,6 +107,8 @@ sudo cp deploy/zeus-ops.service /etc/systemd/system/ && sudo systemctl enable --
 ```
 
 Luego publica el panel con Traefik y contraseña (`deploy/traefik-dynamic.example.yml`), programa las tareas (`deploy/crontab.example`) y despliega el vigilante externo (`cloudflare-worker/`, 6 comandos). Todo está paso a paso en [**docs/INSTALACION.md**](docs/INSTALACION.md).
+
+> **¿Lo va a instalar un agente de IA (Claude Code, Codex…) o un programador que no conoce el proyecto?** Dale [**AGENTS.md**](AGENTS.md): es la misma instalación convertida en una lista de pasos con una comprobación después de cada uno, los datos que hay que pedirle al dueño antes de empezar, las reglas de seguridad que no se pueden romper (empezando por no dejar el puerto 4900 abierto a internet) y una lista de aceptación final.
 
 ## Cómo está hecho
 

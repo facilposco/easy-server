@@ -4,6 +4,8 @@ Este archivo documenta el **protocolo estricto** que sigue Centinela cuando algo
 
 Las reglas de cómo se desarrolla en este proyecto están en [CONTRIBUTING.md](CONTRIBUTING.md). La arquitectura completa, en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
 
+**Si te pidieron instalar Centinela en un servidor, empieza por [AGENTS.md](AGENTS.md)**: pasos en orden, una comprobación después de cada uno y las reglas de seguridad de la instalación.
+
 ---
 
 ## El orden es el protocolo

@@ -17,7 +17,8 @@ Licencia: MIT. Idioma del producto: español (Colombia). Versión estable: 1.0.0
 - [README](README.md): qué es, para quién, cómo se instala en 20 minutos.
 - [Tutorial ilustrado](tutorial.html): cómo funciona cada parte, con capturas.
 - [Arquitectura](docs/ARQUITECTURA.md): módulos, contratos, decisiones de diseño.
-- [Instalación paso a paso](docs/INSTALACION.md): systemd, Traefik, cron, .env.
+- [Instalación paso a paso](docs/INSTALACION.md): systemd, cortafuegos, Traefik, cron, .env y conexión del bot con /centinela.
+- [Guía de instalación para agentes de IA y programadores](AGENTS.md): pasos verificables, datos a pedir, reglas de seguridad y lista de aceptación.
 - [El Worker de Cloudflare](docs/CLOUDFLARE-WORKER.md): vigilante externo y proxy de IA, explicado línea a línea.
 - [Protocolo SOS y reglas](CLAUDE.md): las reglas que no se negocian.
 - [Cómo contribuir](CONTRIBUTING.md).

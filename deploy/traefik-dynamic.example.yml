@@ -6,9 +6,14 @@
 #   docker run --rm httpd:2.4-alpine htpasswd -nbB zeus 'TU-CONTRASEÑA'
 # Pega la línea completa que imprime en `users` (Traefik acepta bcrypt).
 #
-# Centinela escucha en 127.0.0.1:4900 en el host. Desde un contenedor de
-# Traefik se alcanza por la IP de la puerta de enlace de la red de Docker
-# (por ejemplo 172.17.0.1) o con `host.docker.internal` si tu Docker lo soporta.
+# Centinela escucha en 0.0.0.0:4900 en el host. Desde el contenedor de Traefik
+# se alcanza por la IP de la puerta de enlace (gateway) de la red de Docker
+# donde vive Traefik. 172.17.0.1 es la de la red por defecto; si Traefik está
+# en otra red, averígualo con:
+#   docker network inspect NOMBRE_RED -f '{{(index .IPAM.Config 0).Gateway}}'
+# y cambia la URL de abajo. El cortafuegos debe permitir el 4900 SOLO desde
+# esa subred (docs/INSTALACION.md, paso 4b): la API de Centinela no pide
+# contraseña, la protección es esta basicAuth más el cortafuegos.
 
 http:
   routers:
