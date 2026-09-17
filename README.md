@@ -2,6 +2,8 @@
 
 [![Versión estable](https://img.shields.io/badge/versi%C3%B3n-1.0.0-2ea44f)](CHANGELOG.md) [![Licencia MIT](https://img.shields.io/badge/licencia-MIT-blue)](LICENSE) [![Node 20+](https://img.shields.io/badge/node-%E2%89%A520-339933)](package.json) [![Sin dependencias](https://img.shields.io/badge/dependencias-0-informational)](package.json) [![180 pruebas](https://img.shields.io/badge/pruebas-180%20en%20verde-2ea44f)](modulos/pruebas)
 
+> **¿Para qué sirve esto, en una frase?** Centinela Zeus es una herramienta de **monitoreo autónomo de servidores para bots de WhatsApp y otras apps en Docker**, con **auto-reparación de contenedores siguiendo un protocolo de incidentes y reglas de seguridad explícitas** (presupuesto de acciones, enfriamiento, autobloqueo). Es una **alternativa gratuita y de código abierto (MIT) a los servicios de monitoreo de pago** para quien administra un solo VPS Linux pequeño y no puede pagar guardia de un ingeniero 24/7. Si buscas "cómo monitorear un bot de WhatsApp en un VPS", "auto-reparación de Docker sin pagar un SRE" o "qué hacer cuando se cae mi servidor y no sé Linux", este proyecto responde exactamente a eso.
+
 **Centinela Zeus vigila, diagnostica, repara y explica un servidor Linux con Docker — por WhatsApp y con un panel web — para un dueño de negocio que no sabe Linux.** Hace lo que haría un ingeniero de servidores con experiencia: diagnostica antes de tocar, guarda evidencia antes de reparar, repara de lo menos invasivo a lo más invasivo, verifica después de cada paso, y cuando no sabe, se detiene y lo dice.
 
 Está pensado para **pymes, emprendimientos y proyectos con un solo VPS** que no pueden pagar a alguien dedicado a cuidarlo. Es **código abierto (MIT)** y corre hoy en producción, 24/7, cuidando el servidor de un negocio real. Cualquiera puede usarlo, adaptarlo y mejorarlo.
@@ -42,6 +44,54 @@ Centinela ocupa ese lugar:
 | <img src="docs/capturas/optimizacion.png" alt="Auditoría de la base de datos con botones de arreglo por hallazgo" width="440"> | <img src="docs/capturas/movil-inicio.png" alt="Inicio en un celular" width="200"> |
 
 Más capturas en [`docs/capturas/`](docs/capturas/) y una explicación ilustrada de cada sección en [**tutorial.html**](tutorial.html).
+
+## Alertas reales por WhatsApp
+
+Estas son capturas reales (sin datos sensibles) de los avisos que Centinela manda por WhatsApp, sin retocar. La idea es que se vea exactamente lo que recibe el dueño, sin nada que ocultar: es la misma prueba de transparencia y detección proactiva que promete el proyecto.
+
+| Informe semanal | Resumen diario matutino |
+|---|---|
+| <img src="docs/capturas/whatsapp-informe-semanal.png" alt="Informe semanal de Centinela por WhatsApp: minutos de bot sin atender, caídas de la semana y cuántas veces actuó el SOS solo" width="420"> | <img src="docs/capturas/whatsapp-resumen-diario.png" alt="Resumen diario de Centinela por WhatsApp: memoria, disco, seguridad, copias de seguridad e incidentes de los últimos 30 días" width="420"> |
+| Cada lunes, un balance de la semana: cuánto tiempo estuvo el bot sin atender, cada caída con su causa en una línea, y cuántas veces el SOS reparó algo por su cuenta sin que nadie tuviera que intervenir. | Cada mañana, antes de que el dueño abra el negocio: memoria, disco, puntaje de seguridad, estado de la última copia de seguridad e incidentes recientes que Centinela no pudo resolver sola. |
+
+| Aviso de caída y recuperación en tiempo real | Resumen corto para WhatsApp |
+|---|---|
+| <img src="docs/capturas/whatsapp-alerta-caida.png" alt="Aviso de Centinela por WhatsApp de una caída y recuperación automática: qué falló, cuánto duró, por qué, qué hizo y qué recomienda" width="420"> | <img src="docs/capturas/whatsapp-resumen-corto.png" alt="Versión corta del resumen diario de Centinela, formateada para leerse rápido en WhatsApp" width="420"> |
+| En el momento en que algo se cae y se repara solo: qué fue, cuánto duró, la causa más probable, qué hizo Centinela y qué recomienda revisar si se repite. Un par de líneas de log real quedaron tapadas a propósito por privacidad de la infraestructura. | La misma auditoría diaria, resumida para leerse en segundos desde el celular. |
+
+## Controlar todo desde WhatsApp — `/centinela`
+
+Todo lo que hace el panel también se puede pedir por WhatsApp, sin abrir el navegador. Se escribe `/centinela` seguido de un número (o la palabra `menu`/`ayuda` para volver a ver la lista), y también se le puede hablar en lenguaje natural: reconoce la intención sin gastar una consulta de IA cuando puede contestar con datos reales, y si de verdad hace falta razonar, la usa solo si queda cupo del límite diario.
+
+| # | Opción | Qué hace |
+|---|---|---|
+| 1 | SOS: revisar y reparar todo (automático) | Lanza el protocolo de emergencia completo: diagnostica, guarda evidencia, repara en orden de menor a mayor impacto y avisa cuando termina. Es la misma opción que el botón SOS del panel. |
+| 2 | ¿Cómo va todo ahora? | Estado general del servidor en el momento: contenedores, disco, memoria, respaldos y, si hubo un SOS hoy, su resultado. |
+| 3 | El bot no está contestando | Revisa si el bot de WhatsApp está mudo (proceso vivo pero sin responder) y, si es grave, sugiere reiniciarlo (opción 4) o lanzar el SOS. |
+| 4 | Reiniciar el bot de WhatsApp | **Pide confirmar.** Reinicia solo el contenedor del bot; corta conversaciones en curso por unos 20 segundos. |
+| 5 | Hay una consulta trabada en la base | Lista las consultas de MariaDB trabadas esperando un bloqueo, con cuánto llevan y qué base afectan. |
+| 6 | Fallas y reparaciones recientes | Últimos incidentes registrados y las últimas corridas del SOS, con su resultado. |
+| 7 | Deshacer el último cambio | Muestra el último despliegue observado y si tuvo que revertirse; si algo se rompió justo después de un despliegue reciente, remite a la opción 1 (el SOS lo deshace solo si es el culpable). |
+| 8 | La puerta de entrada no responde | **Pide confirmar.** Reinicia el proxy de entrada (`zeus-proxy`) sin tocar el bot, la base ni la memoria de búsqueda. |
+| 9 | El servicio va y viene solo | Detecta si algún contenedor propio lleva varios reinicios seguidos (bucle) y, si es así, recomienda el SOS en vez de reiniciar de nuevo a ciegas. |
+| 10 | Conexiones a la base de datos | Cuántas conexiones hay abiertas a MariaDB ahora mismo y cuántas están trabadas. |
+| 11 | Copias de seguridad | Hace cuánto fue la última copia, su tamaño, si Google Drive está conectado y cuándo es la próxima automática. |
+| 12 | Hacer una copia ahora | **Pide confirmar.** Dispara un respaldo manual de la base de datos; no interrumpe el servicio. |
+| 13 | El certificado del sitio | Estado del certificado SSL, tomado de la misma auditoría de seguridad del panel. |
+| 14 | Liberar espacio en el disco | **Pide confirmar.** Borra temporales y sobras de actualizaciones; nunca datos del negocio ni copias de seguridad. |
+| 15 | ¿La memoria del bot viene subiendo? | Uso de memoria actual y su tendencia; si va a llegar al 90 % en pocos días y el reinicio diario no alcanza a cortarla, sugiere reiniciar ya (opción 4). |
+| 16 | Seguridad | Puntaje de seguridad sobre 100 y el checklist completo (SSH, cortafuegos, actualizaciones, usuarios, permisos, Docker, credenciales), más direcciones bloqueadas ahora mismo. |
+| 17 | ¿Hubo alguna caída corta? | Revisa las últimas ~3 horas de historial por si hubo un pico de CPU o carga que ya se resolvió solo. |
+| 18 | Registros guardados | Últimos paquetes de evidencia guardados por el SOS, con fecha, título y tamaño (para verlos completos hay que entrar al panel, sección Registros). |
+| 19 | Modo viaje (encender o apagar) | **Pide confirmar.** Silencia los avisos que no sean urgentes; se puede volver a apagar con la misma opción. |
+
+Notas sobre cómo funciona el menú, tal como está en el código (`modulos/centinela-comandos.js`):
+
+- **Las opciones que cambian algo (4, 8, 12, 14 y 19) siempre piden confirmación explícita** antes de ejecutarse: primero se pide la opción sola, Centinela explica qué va a hacer, y solo se ejecuta si el dueño responde `/centinela N si` dentro de los siguientes 5 minutos. Responder `no` cancela.
+- **Preguntas en lenguaje natural** (por ejemplo *"¿por qué está lento el bot?"*) también funcionan: si hay una respuesta determinista (sin IA) para lo que se pregunta, la contesta directo; si no, la manda a la IA con el estado real del servidor como contexto, dentro de un tope diario de consultas. El menú numerado nunca gasta esas consultas.
+- **Nunca ejecuta una acción de riesgo solo por interpretar una frase.** Si el mensaje suena a una acción del menú (por ejemplo "reinicia el bot"), queda pendiente de confirmar exactamente igual que si se hubiera pedido el número sin el "sí". Palabras como "borrar", "restaurar" o "actualizar" nunca se ejecutan por WhatsApp: se explica dónde hacerlas.
+- **Varios mensajes juntos en un solo texto** (varias preguntas seguidas, o comandos pegados) se separan y se resuelven uno por uno; las preguntas libres que quedan se agrupan en una sola consulta a la IA para no gastar el cupo de más.
+- Dos acciones quedan **fuera del menú de WhatsApp a propósito**: lanzar un simulacro real y reiniciar el servidor completo. Ambas solo se hacen desde el panel, con una palabra de confirmación adicional, porque si el servidor está realmente caído el propio WhatsApp tampoco respondería.
 
 ## Instalación en 20 minutos
 
